@@ -1,0 +1,74 @@
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ArrowRight, Mail } from 'lucide-react'
+import { Container } from '@/components/layout/Container'
+import { Button } from '@/components/ui/button'
+import { HeroSection } from '@/components/home/HeroSection'
+import { ServicesPreview } from '@/components/home/ServicesPreview'
+import { LatestWritings } from '@/components/home/LatestWritings'
+import { MediaHighlight } from '@/components/home/MediaHighlight'
+import {
+  getActiveServices,
+  getLatestArticles,
+  getSiteSettings,
+} from '@/lib/notion'
+import { getHomeMeta, getPersonSchema } from '@/lib/seo'
+
+export const Route = createFileRoute('/')({
+  loader: async () => {
+    const [services, latestArticles, settings] = await Promise.all([
+      getActiveServices(),
+      getLatestArticles({ data: 3 }),
+      getSiteSettings(),
+    ])
+    return { services, latestArticles, settings }
+  },
+  head: () => {
+    const { meta, links } = getHomeMeta()
+    return {
+      meta,
+      links,
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: getPersonSchema(),
+        },
+      ],
+    }
+  },
+  component: HomePage,
+})
+
+function HomePage() {
+  const { services, latestArticles, settings } = Route.useLoaderData()
+
+  return (
+    <>
+      <HeroSection />
+      <ServicesPreview services={services} />
+      <LatestWritings articles={latestArticles} />
+      <MediaHighlight settings={settings} />
+
+      {/* Contact CTA */}
+      <section className="border-t border-border bg-primary/5 py-16">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+              Write to Imam Shamsan
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Have questions, need guidance, or want to book a service?
+              Don't hesitate to reach out.
+            </p>
+            <Link to="/contact" className="mt-6 inline-block">
+              <Button size="lg" className="gap-2">
+                <Mail className="size-4" />
+                Contact
+                <ArrowRight className="size-4" />
+              </Button>
+            </Link>
+          </div>
+        </Container>
+      </section>
+    </>
+  )
+}

@@ -1,0 +1,104 @@
+import { Link } from '@tanstack/react-router'
+import { Youtube, Facebook, Instagram, Mail } from 'lucide-react'
+import { Container } from './Container'
+
+export function Footer() {
+  return (
+    <footer className="mt-auto border-t border-border bg-muted/30 py-8">
+      <Container>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          {/* Brand */}
+          <div>
+            <Link
+              to="/"
+              className="text-lg font-semibold text-primary"
+            >
+              Imam Dr. Shamsan Al-Jabi
+            </Link>
+            <p className="mt-1 font-arabic text-sm text-muted-foreground" dir="rtl">
+              الدكتور. شمسان الجابي
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Islamic Scholar, Educator & Community Leader
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Quick Links
+            </h3>
+            <ul className="mt-2 space-y-1">
+              {[
+                { to: '/about', label: 'About' },
+                { to: '/services', label: 'Services' },
+                { to: '/writings', label: 'Writings' },
+                { to: '/contact', label: 'Contact' },
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Social / Contact */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Connect
+            </h3>
+            <div className="mt-2 flex gap-3">
+              <a
+                href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="size-5" />
+              </a>
+              <a
+                href="https://www.facebook.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="size-5" />
+              </a>
+              <a
+                href="https://www.instagram.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="size-5" />
+              </a>
+              <a
+                href="mailto:MCCGPImamShamsan@gmail.com"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Email"
+              >
+                <Mail className="size-5" />
+              </a>
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              MCCGPImamShamsan@gmail.com
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-border pt-4 text-center text-sm text-muted-foreground">
+          &copy; {new Date().getFullYear()} Imam Dr. Shamsan Al-Jabi. All
+          rights reserved.
+        </div>
+      </Container>
+    </footer>
+  )
+}

@@ -1,0 +1,135 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { Mail, Youtube, Facebook, Instagram } from 'lucide-react'
+import { Container } from '@/components/layout/Container'
+import { ContactForm } from '@/components/contact/ContactForm'
+import { getActiveServices } from '@/lib/notion'
+import { getContactMeta, getBreadcrumbSchema, siteConfig } from '@/lib/seo'
+
+interface ContactSearch {
+  service?: string
+}
+
+export const Route = createFileRoute('/contact')({
+  validateSearch: (search: Record<string, unknown>): ContactSearch => ({
+    service: (search.service as string) || undefined,
+  }),
+  loader: async () => {
+    const services = await getActiveServices()
+    return { services }
+  },
+  head: () => {
+    const { meta, links } = getContactMeta()
+    return {
+      meta,
+      links,
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: getBreadcrumbSchema([
+            { name: 'Home', url: siteConfig.url },
+            { name: 'Contact', url: `${siteConfig.url}/contact` },
+          ]),
+        },
+      ],
+    }
+  },
+  component: ContactPage,
+})
+
+function ContactPage() {
+  const { services } = Route.useLoaderData()
+  const { service } = Route.useSearch()
+
+  return (
+    <>
+      <section className="bg-gradient-to-b from-accent/30 to-background py-12 md:py-16">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+              <span className="text-primary">Contact</span>
+            </h1>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Reach out to Imam Shamsan for bookings, inquiries, or community
+              services
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      <section className="py-12">
+        <Container>
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 lg:grid-cols-5">
+            {/* Form */}
+            <div className="lg:col-span-3">
+              <ContactForm
+                services={services}
+                preselectedService={service}
+              />
+            </div>
+
+            {/* Contact Info Sidebar */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Get in Touch
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Mail className="size-5 text-primary mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        Email
+                      </p>
+                      <a
+                        href="mailto:MCCGPImamShamsan@gmail.com"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        MCCGPImamShamsan@gmail.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Follow & Connect
+                </h3>
+                <div className="flex gap-4">
+                  <a
+                    href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Youtube className="size-5 text-red-500" />
+                    YouTube
+                  </a>
+                  <a
+                    href="https://www.facebook.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Facebook className="size-5 text-blue-600" />
+                    Facebook
+                  </a>
+                  <a
+                    href="https://www.instagram.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Instagram className="size-5 text-pink-500" />
+                    Instagram
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+    </>
+  )
+}

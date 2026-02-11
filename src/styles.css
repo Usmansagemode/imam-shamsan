@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+body {
+  @apply m-0;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Arabic text uses Scheherazade New */
+.font-arabic {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+}
+
+/* RTL support for Arabic content */
+[dir="rtl"] {
+  text-align: right;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Imam Shamsan Light Theme - Islamic Green + Gold */
+  --background: oklch(0.97 0.005 90);              /* Warm cream */
+  --foreground: oklch(0.20 0.02 150);              /* Deep forest text */
+
+  --card: oklch(0.99 0.003 90);                    /* Near-white cards */
+  --card-foreground: oklch(0.20 0.02 150);
+
+  --popover: oklch(0.99 0.003 90);
+  --popover-foreground: oklch(0.20 0.02 150);
+
+  /* Islamic Green as Primary */
+  --primary: oklch(0.45 0.12 155);                 /* Deep emerald green */
+  --primary-foreground: oklch(0.99 0.005 90);      /* Light text on green */
+
+  /* Gold/Warm Brown as Secondary */
+  --secondary: oklch(0.72 0.12 75);                /* Rich gold */
+  --secondary-foreground: oklch(0.20 0.02 75);     /* Dark text on gold */
+
+  /* Muted tones - soft warm */
+  --muted: oklch(0.93 0.01 90);                    /* Light warm gray */
+  --muted-foreground: oklch(0.50 0.02 150);        /* Medium green-gray */
+
+  /* Accent - lighter green for highlights */
+  --accent: oklch(0.90 0.04 155);                  /* Light sage-green */
+  --accent-foreground: oklch(0.20 0.02 150);
+
+  /* Destructive */
+  --destructive: oklch(0.52 0.20 25);
+  --destructive-foreground: oklch(0.99 0.005 90);
+
+  --border: oklch(0.88 0.015 90);                  /* Soft warm border */
+  --input: oklch(0.90 0.015 90);                   /* Warm input bg */
+  --ring: oklch(0.45 0.12 155);                    /* Green focus ring */
+
+  /* Charts */
+  --chart-1: oklch(0.45 0.12 155);                 /* Emerald */
+  --chart-2: oklch(0.72 0.12 75);                  /* Gold */
+  --chart-3: oklch(0.55 0.10 45);                  /* Warm brown */
+  --chart-4: oklch(0.52 0.20 25);                  /* Red */
+  --chart-5: oklch(0.65 0.08 125);                 /* Olive */
+}
+
+.dark {
+  /* Dark Theme - Deep & Elegant */
+  --background: oklch(0.15 0.01 155);              /* Deep green-tinted dark */
+  --foreground: oklch(0.95 0.005 90);              /* Soft cream text */
+
+  --card: oklch(0.19 0.012 155);                   /* Slightly lighter */
+  --card-foreground: oklch(0.95 0.005 90);
+
+  --popover: oklch(0.19 0.012 155);
+  --popover-foreground: oklch(0.95 0.005 90);
+
+  /* Brighter green for dark mode */
+  --primary: oklch(0.65 0.15 155);                 /* Vibrant emerald */
+  --primary-foreground: oklch(0.15 0.01 155);      /* Dark on green */
+
+  /* Muted gold for dark mode */
+  --secondary: oklch(0.68 0.12 75);                /* Soft gold */
+  --secondary-foreground: oklch(0.15 0.01 155);
+
+  --muted: oklch(0.24 0.015 155);                  /* Dark muted */
+  --muted-foreground: oklch(0.65 0.02 90);         /* Soft gray text */
+
+  --accent: oklch(0.28 0.03 155);                  /* Dark green accent */
+  --accent-foreground: oklch(0.95 0.005 90);
+
+  --destructive: oklch(0.60 0.20 25);
+  --destructive-foreground: oklch(0.95 0.005 90);
+
+  --border: oklch(0.27 0.015 155);                 /* Subtle border */
+  --input: oklch(0.22 0.012 155);                  /* Dark input */
+  --ring: oklch(0.65 0.15 155);                    /* Bright green ring */
+
+  /* Charts */
+  --chart-1: oklch(0.65 0.15 155);
+  --chart-2: oklch(0.68 0.12 75);
+  --chart-3: oklch(0.60 0.08 200);
+  --chart-4: oklch(0.60 0.20 25);
+  --chart-5: oklch(0.68 0.12 105);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+/* Islamic decorative divider */
+.islamic-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.islamic-divider::before,
+.islamic-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}

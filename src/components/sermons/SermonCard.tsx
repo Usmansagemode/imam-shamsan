@@ -1,21 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { Calendar, Play } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import { getYouTubeThumbnail } from '@/lib/youtube'
 import type { SermonSummary } from '@/types/sermon'
 
 interface SermonCardProps {
   sermon: SermonSummary
-}
-
-function getYouTubeThumbnail(url: string): string | null {
-  if (!url || typeof url !== 'string') return null
-  const watchMatch = url.match(/[?&]v=([^&]+)/)
-  if (watchMatch) return `https://img.youtube.com/vi/${watchMatch[1]}/mqdefault.jpg`
-  const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
-  if (shortMatch) return `https://img.youtube.com/vi/${shortMatch[1]}/mqdefault.jpg`
-  const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/)
-  if (liveMatch) return `https://img.youtube.com/vi/${liveMatch[1]}/mqdefault.jpg`
-  return null
 }
 
 export function SermonCard({ sermon }: SermonCardProps) {

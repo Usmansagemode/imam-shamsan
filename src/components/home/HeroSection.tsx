@@ -26,8 +26,8 @@ export function HeroSection({ settings }: HeroSectionProps) {
               />
             </div>
           )}
-          <h1 className="whitespace-nowrap text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Imam Dr. <span className="text-primary">Shamsan Al-Jabi</span>
+          <h1 className="text-[clamp(1.75rem,5vw,3.75rem)] font-bold tracking-tight text-foreground sm:whitespace-nowrap">
+            Imam Dr. <span className="text-primary">Shamsan&nbsp;Al-Jabi</span>
           </h1>
           <ArabicText
             as="h1"

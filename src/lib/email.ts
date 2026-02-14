@@ -1,12 +1,25 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 
-interface ContactFormData {
-  name: string
-  email: string
-  phone?: string
-  service?: string
-  eventLocation?: string
-  message: string
+const contactFormSchema = z.object({
+  name: z.string().min(1).max(200),
+  email: z.string().email().max(320),
+  phone: z.string().max(30).optional(),
+  service: z.string().max(200).optional(),
+  eventLocation: z.string().max(500).optional(),
+  message: z.string().min(1).max(5000),
+})
+
+type ContactFormData = z.infer<typeof contactFormSchema>
+
+/** Escape HTML special characters to prevent injection in email body */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }
 
 async function sendContactEmail(data: ContactFormData): Promise<{ success: boolean; error?: string }> {
@@ -29,17 +42,17 @@ async function sendContactEmail(data: ContactFormData): Promise<{ success: boole
         from: 'Imam Shamsan Website <onboarding@resend.dev>',
         to: contactEmail,
         subject: data.service
-          ? `New Inquiry: ${data.service} - from ${data.name}`
-          : `New Message from ${data.name}`,
+          ? `New Inquiry: ${escapeHtml(data.service)} - from ${escapeHtml(data.name)}`
+          : `New Message from ${escapeHtml(data.name)}`,
         html: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Email:</strong> ${data.email}</p>
-          ${data.phone ? `<p><strong>Phone:</strong> ${data.phone}</p>` : ''}
-          ${data.service ? `<p><strong>Service:</strong> ${data.service}</p>` : ''}
-          ${data.eventLocation ? `<p><strong>Event Location:</strong> ${data.eventLocation}</p>` : ''}
+          <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+          ${data.phone ? `<p><strong>Phone:</strong> ${escapeHtml(data.phone)}</p>` : ''}
+          ${data.service ? `<p><strong>Service:</strong> ${escapeHtml(data.service)}</p>` : ''}
+          ${data.eventLocation ? `<p><strong>Event Location:</strong> ${escapeHtml(data.eventLocation)}</p>` : ''}
           <p><strong>Message:</strong></p>
-          <p>${data.message.replace(/\n/g, '<br>')}</p>
+          <p>${escapeHtml(data.message).replace(/\n/g, '<br>')}</p>
         `,
         reply_to: data.email,
       }),
@@ -60,7 +73,8 @@ async function sendContactEmail(data: ContactFormData): Promise<{ success: boole
 
 export const submitContactForm = createServerFn({
   method: 'POST',
-}).handler(async (ctx) => {
-  const data = (ctx as Record<string, unknown>).data as ContactFormData
-  return sendContactEmail(data)
 })
+  .inputValidator(contactFormSchema)
+  .handler(async ({ data }) => {
+    return sendContactEmail(data)
+  })

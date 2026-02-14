@@ -1,24 +1,10 @@
 import { ArticleContent } from '@/components/articles/ArticleContent'
+import { getYouTubeEmbedUrl } from '@/lib/youtube'
 import type { ContentBlock } from '@/types/article'
 
 interface SermonContentProps {
   blocks: ContentBlock[]
   youtubeLink?: string
-}
-
-function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url || typeof url !== 'string') return null
-
-  const watchMatch = url.match(/[?&]v=([^&]+)/)
-  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`
-
-  const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`
-
-  const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/)
-  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}`
-
-  return null
 }
 
 export function SermonContent({ blocks, youtubeLink }: SermonContentProps) {

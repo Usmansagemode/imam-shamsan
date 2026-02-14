@@ -1,4 +1,4 @@
-type ImagePreset = 'thumbnail' | 'hero' | 'card' | 'article-cover' | 'gallery-thumb' | 'gallery-full' | 'avatar'
+export type ImagePreset = 'thumbnail' | 'hero' | 'card' | 'article-cover' | 'gallery-thumb' | 'gallery-full' | 'avatar'
 
 interface PresetConfig {
   width: number
@@ -16,65 +16,19 @@ const presets: Record<ImagePreset, PresetConfig> = {
   avatar: { width: 200, height: 200, crop: 'fill' },
 }
 
-/**
- * Transform a Cloudinary URL with optimization parameters
- */
-export function getOptimizedUrl(url: string, preset: ImagePreset): string {
-  if (!url || typeof url !== 'string') return ''
+const CLOUDINARY_REGEX = /^https?:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(.*)/
+const TRANSFORM_PREFIX = /^(w_|h_|c_|q_|f_|ar_|g_|dpr_|e_|l_|fl_|t_)/
 
-  const cloudinaryRegex =
-    /^https?:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(.*)/
-  const match = url.match(cloudinaryRegex)
-
-  if (!match) {
-    return url
-  }
-
-  const [, cloudName, pathWithTransforms] = match
-
-  const pathParts = pathWithTransforms.split('/')
-  const transformRegex = /^(w_|h_|c_|q_|f_|ar_|g_|dpr_|e_|l_|fl_|t_)/
-  const firstNonTransformIndex = pathParts.findIndex(
-    (part) => !transformRegex.test(part) && !part.includes(','),
-  )
-
-  let imagePath: string
-  if (firstNonTransformIndex === -1) {
-    imagePath = pathParts.join('/')
-  } else {
-    imagePath = pathParts.slice(firstNonTransformIndex).join('/')
-  }
-
-  const config = presets[preset]
-  const transforms: string[] = []
-
-  transforms.push(`w_${config.width}`)
-  if (config.height) transforms.push(`h_${config.height}`)
-  if (config.crop) transforms.push(`c_${config.crop}`)
-  transforms.push('q_auto', 'f_auto')
-
-  const transformation = transforms.join(',')
-
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${transformation}/${imagePath}`
-}
-
-/**
- * Get a blur placeholder URL for loading states
- */
-export function getBlurPlaceholder(url: string): string {
-  if (!url || typeof url !== 'string') return ''
-
-  const cloudinaryRegex =
-    /^https?:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(.*)/
-  const match = url.match(cloudinaryRegex)
-
-  if (!match) return url
+/** Extract cloud name and clean image path from a Cloudinary URL */
+function parseCloudinaryUrl(url: string): { cloudName: string; imagePath: string } | null {
+  if (!url || typeof url !== 'string') return null
+  const match = url.match(CLOUDINARY_REGEX)
+  if (!match) return null
 
   const [, cloudName, pathWithTransforms] = match
   const pathParts = pathWithTransforms.split('/')
-  const transformRegex = /^(w_|h_|c_|q_|f_|ar_|g_|dpr_|e_|l_|fl_|t_)/
   const firstNonTransformIndex = pathParts.findIndex(
-    (part) => !transformRegex.test(part) && !part.includes(','),
+    (part) => !TRANSFORM_PREFIX.test(part) && !part.includes(','),
   )
 
   const imagePath =
@@ -82,5 +36,63 @@ export function getBlurPlaceholder(url: string): string {
       ? pathParts.join('/')
       : pathParts.slice(firstNonTransformIndex).join('/')
 
-  return `https://res.cloudinary.com/${cloudName}/image/upload/w_50,h_50,c_fill,q_auto,f_auto,e_blur:1000/${imagePath}`
+  return { cloudName, imagePath }
+}
+
+/** Build a Cloudinary URL with specific transforms */
+function buildUrl(cloudName: string, imagePath: string, transforms: string[]): string {
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${transforms.join(',')}/${imagePath}`
+}
+
+/**
+ * Transform a Cloudinary URL with optimization parameters
+ */
+export function getOptimizedUrl(url: string, preset: ImagePreset): string {
+  const parsed = parseCloudinaryUrl(url)
+  if (!parsed) return url || ''
+
+  const config = presets[preset]
+  const transforms = [`w_${config.width}`]
+  if (config.height) transforms.push(`h_${config.height}`)
+  if (config.crop) transforms.push(`c_${config.crop}`)
+  transforms.push('q_auto', 'f_auto')
+
+  return buildUrl(parsed.cloudName, parsed.imagePath, transforms)
+}
+
+/**
+ * Generate srcSet string for responsive images
+ */
+export function getSrcSet(url: string, preset: ImagePreset): string {
+  const parsed = parseCloudinaryUrl(url)
+  if (!parsed) return ''
+
+  const config = presets[preset]
+  const widths = [
+    Math.round(config.width * 0.5),
+    config.width,
+    Math.round(config.width * 1.5),
+  ]
+
+  return widths
+    .map((w) => {
+      const transforms = [`w_${w}`]
+      if (config.height) transforms.push(`h_${Math.round(config.height * (w / config.width))}`)
+      if (config.crop) transforms.push(`c_${config.crop}`)
+      transforms.push('q_auto', 'f_auto')
+      return `${buildUrl(parsed.cloudName, parsed.imagePath, transforms)} ${w}w`
+    })
+    .join(', ')
+}
+
+/**
+ * Get a blur placeholder URL for loading states
+ */
+export function getBlurPlaceholder(url: string): string {
+  const parsed = parseCloudinaryUrl(url)
+  if (!parsed) return url || ''
+
+  return buildUrl(parsed.cloudName, parsed.imagePath, [
+    'w_50', 'h_50', 'c_fill', 'q_auto', 'f_auto', 'e_blur:1000',
+  ])
 }

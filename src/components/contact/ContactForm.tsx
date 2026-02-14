@@ -13,6 +13,22 @@ interface ContactFormProps {
   preselectedService?: string
 }
 
+type FieldErrors = Partial<Record<'name' | 'email' | 'message', string>>
+
+function validateForm(state: { name: string; email: string; message: string }): FieldErrors {
+  const errors: FieldErrors = {}
+  if (!state.name.trim()) errors.name = 'Name is required'
+  else if (state.name.trim().length > 200) errors.name = 'Name is too long'
+
+  if (!state.email.trim()) errors.email = 'Email is required'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) errors.email = 'Please enter a valid email'
+
+  if (!state.message.trim()) errors.message = 'Message is required'
+  else if (state.message.length > 5000) errors.message = 'Message is too long (max 5000 characters)'
+
+  return errors
+}
+
 export function ContactForm({ services, preselectedService }: ContactFormProps) {
   const [formState, setFormState] = useState({
     name: '',
@@ -24,21 +40,27 @@ export function ContactForm({ services, preselectedService }: ContactFormProps) 
   })
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const errors = validateForm(formState)
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
     setStatus('sending')
     setErrorMessage('')
 
     try {
       const result = await submitContactForm({
         data: {
-          name: formState.name,
-          email: formState.email,
+          name: formState.name.trim(),
+          email: formState.email.trim(),
           phone: formState.phone || undefined,
           service: formState.service || undefined,
           eventLocation: formState.eventLocation || undefined,
-          message: formState.message,
+          message: formState.message.trim(),
         },
       })
 
@@ -52,6 +74,7 @@ export function ContactForm({ services, preselectedService }: ContactFormProps) 
           eventLocation: '',
           message: '',
         })
+        setFieldErrors({})
       } else {
         setStatus('error')
         setErrorMessage(result.error || 'Something went wrong')
@@ -93,11 +116,14 @@ export function ContactForm({ services, preselectedService }: ContactFormProps) 
             id="name"
             required
             value={formState.name}
-            onChange={(e) =>
+            onChange={(e) => {
               setFormState((s) => ({ ...s, name: e.target.value }))
-            }
+              if (fieldErrors.name) setFieldErrors((f) => ({ ...f, name: undefined }))
+            }}
             placeholder="Your full name"
+            aria-invalid={!!fieldErrors.name}
           />
+          {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email *</Label>
@@ -106,11 +132,14 @@ export function ContactForm({ services, preselectedService }: ContactFormProps) 
             type="email"
             required
             value={formState.email}
-            onChange={(e) =>
+            onChange={(e) => {
               setFormState((s) => ({ ...s, email: e.target.value }))
-            }
+              if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: undefined }))
+            }}
             placeholder="your@email.com"
+            aria-invalid={!!fieldErrors.email}
           />
+          {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
         </div>
       </div>
 
@@ -164,12 +193,15 @@ export function ContactForm({ services, preselectedService }: ContactFormProps) 
           id="message"
           required
           value={formState.message}
-          onChange={(e) =>
+          onChange={(e) => {
             setFormState((s) => ({ ...s, message: e.target.value }))
-          }
+            if (fieldErrors.message) setFieldErrors((f) => ({ ...f, message: undefined }))
+          }}
           placeholder="How can Imam Shamsan help you?"
           rows={5}
+          aria-invalid={!!fieldErrors.message}
         />
+        {fieldErrors.message && <p className="text-xs text-destructive">{fieldErrors.message}</p>}
       </div>
 
       {status === 'error' && (

@@ -113,15 +113,10 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       )
 
     case 'bulleted_list_item':
-      return (
-        <li key={block.id} className={cn('ml-6 list-disc', arabicClass)} dir={arabicDir}>
-          {richContent}
-        </li>
-      )
-
     case 'numbered_list_item':
+      // Handled by groupBlocks() — shouldn't reach here, but fallback just in case
       return (
-        <li key={block.id} className={cn('ml-6 list-decimal', arabicClass)} dir={arabicDir}>
+        <li key={block.id} className={arabicClass || undefined} dir={arabicDir}>
           {richContent}
         </li>
       )
@@ -221,6 +216,68 @@ function renderBlock(block: ContentBlock): React.ReactNode {
   }
 }
 
+/**
+ * Group consecutive list items into proper <ul>/<ol> containers.
+ * Non-list blocks pass through unchanged.
+ */
+function groupBlocks(blocks: ContentBlock[]): React.ReactNode[] {
+  const result: React.ReactNode[] = []
+  let i = 0
+
+  while (i < blocks.length) {
+    const block = blocks[i]
+
+    if (block.type === 'bulleted_list_item') {
+      const items: ContentBlock[] = []
+      while (i < blocks.length && blocks[i].type === 'bulleted_list_item') {
+        items.push(blocks[i])
+        i++
+      }
+      result.push(
+        <ul key={items[0].id} className="list-disc space-y-1 pl-6">
+          {items.map(renderListItem)}
+        </ul>,
+      )
+    } else if (block.type === 'numbered_list_item') {
+      const items: ContentBlock[] = []
+      while (i < blocks.length && blocks[i].type === 'numbered_list_item') {
+        items.push(blocks[i])
+        i++
+      }
+      result.push(
+        <ol key={items[0].id} className="list-decimal space-y-1 pl-6">
+          {items.map(renderListItem)}
+        </ol>,
+      )
+    } else {
+      result.push(renderBlock(block))
+      i++
+    }
+  }
+
+  return result
+}
+
+/** Render a list item without the ml-6 / list-style classes (parent handles those). */
+function renderListItem(block: ContentBlock): React.ReactNode {
+  const richContent =
+    block.richText && block.richText.length > 0
+      ? renderRichText(block.richText)
+      : block.content
+
+  const blockText = getBlockText(block)
+  const isArabicBlock = containsArabic(blockText)
+
+  let arabicClass = ''
+  if (isArabicBlock) arabicClass = 'font-arabic'
+
+  return (
+    <li key={block.id} className={arabicClass || undefined} dir={isArabicBlock ? 'rtl' : undefined}>
+      {richContent}
+    </li>
+  )
+}
+
 interface ArticleContentProps {
   blocks: ContentBlock[]
   isArabic?: boolean
@@ -235,7 +292,7 @@ export function ArticleContent({ blocks, isArabic }: ArticleContentProps) {
       )}
       dir={isArabic ? 'rtl' : 'ltr'}
     >
-      {blocks.map(renderBlock)}
+      {groupBlocks(blocks)}
     </div>
   )
 }

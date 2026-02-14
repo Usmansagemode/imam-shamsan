@@ -21,6 +21,7 @@ export function GalleryGrid({ images, onImageClick }: GalleryGridProps) {
         <button
           key={image.id}
           onClick={() => onImageClick(index)}
+          aria-label={`View ${image.caption || 'photo'} in lightbox`}
           className="mb-4 block w-full overflow-hidden rounded-lg ring-1 ring-foreground/10 transition-all hover:ring-primary/30 hover:shadow-md cursor-pointer break-inside-avoid"
         >
           <CloudinaryImage

@@ -1,23 +1,27 @@
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { getOptimizedUrl } from '@/lib/cloudinary'
-
-type ImagePreset = 'thumbnail' | 'hero' | 'card' | 'article-cover' | 'gallery-thumb' | 'gallery-full' | 'avatar'
+import { getOptimizedUrl, getSrcSet } from '@/lib/cloudinary'
+import type { ImagePreset } from '@/lib/cloudinary'
 
 interface CloudinaryImageProps
   extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string
   alt: string
   preset?: ImagePreset
+  sizes?: string
 }
 
 export function CloudinaryImage({
   src,
   alt,
   preset = 'card',
+  sizes,
   className,
   ...props
 }: CloudinaryImageProps) {
-  if (!src) {
+  const [hasError, setHasError] = useState(false)
+
+  if (!src || hasError) {
     return (
       <div
         className={cn(
@@ -31,13 +35,17 @@ export function CloudinaryImage({
   }
 
   const optimizedUrl = getOptimizedUrl(src, preset)
+  const srcSet = getSrcSet(src, preset)
 
   return (
     <img
       src={optimizedUrl}
+      srcSet={srcSet || undefined}
+      sizes={sizes}
       alt={alt}
       className={cn('h-full w-full object-cover', className)}
       loading="lazy"
+      onError={() => setHasError(true)}
       {...props}
     />
   )

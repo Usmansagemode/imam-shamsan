@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { ARTICLE_LANGUAGES } from '@/lib/constants'
 
 interface LanguageFilterProps {
   selected: string
@@ -7,8 +8,6 @@ interface LanguageFilterProps {
   selectedCategory?: string
   onCategorySelect?: (value: string) => void
 }
-
-const languages = ['All', 'English', 'Arabic', 'Bilingual']
 
 export function LanguageFilter({
   selected,
@@ -19,14 +18,15 @@ export function LanguageFilter({
 }: LanguageFilterProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap gap-2">
+      <div role="group" aria-label="Filter by language" className="flex flex-wrap gap-2">
         <span className="text-sm font-medium text-muted-foreground self-center mr-1">
           Language:
         </span>
-        {languages.map((lang) => (
+        {ARTICLE_LANGUAGES.map((lang) => (
           <button
             key={lang}
             onClick={() => onSelect(lang)}
+            aria-pressed={selected === lang}
             className={cn(
               'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
               selected === lang
@@ -40,7 +40,7 @@ export function LanguageFilter({
       </div>
 
       {categories && categories.length > 0 && onCategorySelect && (
-        <div className="flex flex-wrap gap-2">
+        <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
           <span className="text-sm font-medium text-muted-foreground self-center mr-1">
             Category:
           </span>
@@ -48,6 +48,7 @@ export function LanguageFilter({
             <button
               key={cat}
               onClick={() => onCategorySelect(cat)}
+              aria-pressed={selectedCategory === cat}
               className={cn(
                 'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                 selectedCategory === cat

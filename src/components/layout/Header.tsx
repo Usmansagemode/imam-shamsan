@@ -17,6 +17,7 @@ import {
 import { Container } from './Container'
 import { ThemeToggle } from './ThemeToggle'
 import { Button } from '@/components/ui/button'
+import { useTheme } from '@/lib/theme'
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -42,14 +43,7 @@ const mobileIcons: Record<string, React.ElementType> = {
 
 function MobileMenu() {
   const [open, setOpen] = useState(false)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.toggle('dark', newTheme === 'dark')
-  }
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="md:hidden relative">

@@ -39,6 +39,25 @@ export const Route = createFileRoute('/sermons/$slug')({
     }
   },
   component: SermonPage,
+  errorComponent: ({ error }) => (
+    <Container size="narrow">
+      <div className="py-24 text-center">
+        <h1 className="text-3xl font-bold text-foreground">Sermon Not Found</h1>
+        <p className="mt-4 text-muted-foreground">
+          {error instanceof Error && error.message === 'Sermon not found'
+            ? "This sermon doesn't exist or has been removed."
+            : 'Something went wrong loading this sermon.'}
+        </p>
+        <Link
+          to="/sermons"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          Back to Sermons
+        </Link>
+      </div>
+    </Container>
+  ),
 })
 
 function SermonPage() {

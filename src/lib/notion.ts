@@ -1,11 +1,18 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 import type {
   BlockObjectResponse,
   PageObjectResponse,
-  QueryDatabaseResponse,
   ListBlockChildrenResponse,
 } from '@notionhq/client/build/src/api-endpoints'
-import type { ArticleSummary, Article, ContentBlock, RichTextItem } from '@/types/article'
+
+/** Response shape from Notion's POST /databases/{id}/query endpoint */
+interface QueryDatabaseResponse {
+  results: Array<PageObjectResponse | { object: 'page'; id: string }>
+  has_more: boolean
+  next_cursor: string | null
+}
+import type { ArticleSummary, Article } from '@/types/article'
 import type { Service } from '@/types/service'
 import type { SermonSummary, Sermon } from '@/types/sermon'
 import type { GalleryImage } from '@/types/gallery'
@@ -15,6 +22,41 @@ import type { AboutPage } from '@/types/about'
 import { parseBlocksToContent } from './parsers'
 
 const NOTION_API_VERSION = '2022-06-28'
+
+// ── In-memory TTL cache ──────────────────────────────────────
+// Prevents hitting Notion's 3 req/s rate limit and speeds up responses.
+
+const CACHE_TTL_MS = 60 * 1000 // 1 minute
+
+interface CacheEntry<T> {
+  data: T
+  expiresAt: number
+}
+
+const cache = new Map<string, CacheEntry<unknown>>()
+
+function getCached<T>(key: string): T | undefined {
+  const entry = cache.get(key)
+  if (!entry) return undefined
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(key)
+    return undefined
+  }
+  return entry.data as T
+}
+
+function setCache<T>(key: string, data: T): void {
+  cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS })
+}
+
+function withCache<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const cached = getCached<T>(key)
+  if (cached !== undefined) return Promise.resolve(cached)
+  return fn().then((result) => {
+    setCache(key, result)
+    return result
+  })
+}
 
 function getApiKey(): string {
   return process.env.NOTION_API_KEY || ''
@@ -182,30 +224,33 @@ async function fetchPublishedArticles(options?: {
   const databaseId = getDbId('NOTION_ARTICLES_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return []
 
-  try {
-    const filters: object[] = [
-      { property: 'Status', select: { equals: 'Published' } },
-    ]
-    if (options?.language && options.language !== 'All') {
-      filters.push({ property: 'Language', select: { equals: options.language } })
-    }
-    if (options?.category && options.category !== 'All') {
-      filters.push({ property: 'Category', select: { equals: options.category } })
-    }
+  const cacheKey = `articles:${options?.language ?? 'all'}:${options?.category ?? 'all'}:${options?.limit ?? 'all'}`
+  return withCache(cacheKey, async () => {
+    try {
+      const filters: object[] = [
+        { property: 'Status', select: { equals: 'Published' } },
+      ]
+      if (options?.language && options.language !== 'All') {
+        filters.push({ property: 'Language', select: { equals: options.language } })
+      }
+      if (options?.category && options.category !== 'All') {
+        filters.push({ property: 'Category', select: { equals: options.category } })
+      }
 
-    const response = await queryDatabase(databaseId, {
-      filter: filters.length === 1 ? filters[0] : { and: filters },
-      sorts: [{ timestamp: 'created_time', direction: 'descending' }],
-      ...(options?.limit ? { page_size: options.limit } : {}),
-    })
+      const response = await queryDatabase(databaseId, {
+        filter: filters.length === 1 ? filters[0] : { and: filters },
+        sorts: [{ timestamp: 'created_time', direction: 'descending' }],
+        ...(options?.limit ? { page_size: options.limit } : {}),
+      })
 
-    return response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(pageToArticleSummary)
-  } catch (error) {
-    console.error('Error fetching articles:', error)
-    return []
-  }
+      return response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(pageToArticleSummary)
+    } catch (error) {
+      console.error('Error fetching articles:', error)
+      return []
+    }
+  })
 }
 
 async function fetchArticleBySlug(slug: string): Promise<Article | null> {
@@ -253,19 +298,21 @@ async function fetchActiveServices(): Promise<Service[]> {
   const databaseId = getDbId('NOTION_SERVICES_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return []
 
-  try {
-    const response = await queryDatabase(databaseId, {
-      filter: { property: 'Status', select: { equals: 'Active' } },
-      sorts: [{ property: 'Order', direction: 'ascending' }],
-    })
+  return withCache('services:active', async () => {
+    try {
+      const response = await queryDatabase(databaseId, {
+        filter: { property: 'Status', select: { equals: 'Active' } },
+        sorts: [{ property: 'Order', direction: 'ascending' }],
+      })
 
-    return response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(pageToService)
-  } catch (error) {
-    console.error('Error fetching services:', error)
-    return []
-  }
+      return response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(pageToService)
+    } catch (error) {
+      console.error('Error fetching services:', error)
+      return []
+    }
+  })
 }
 
 // ── Sermons ──────────────────────────────────────────────
@@ -294,20 +341,22 @@ async function fetchPublishedSermons(limit?: number): Promise<SermonSummary[]> {
   const databaseId = getDbId('NOTION_SERMONS_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return []
 
-  try {
-    const response = await queryDatabase(databaseId, {
-      filter: { property: 'Status', select: { equals: 'Published' } },
-      sorts: [{ property: 'Date', direction: 'descending' }],
-      ...(limit ? { page_size: limit } : {}),
-    })
+  return withCache(`sermons:${limit ?? 'all'}`, async () => {
+    try {
+      const response = await queryDatabase(databaseId, {
+        filter: { property: 'Status', select: { equals: 'Published' } },
+        sorts: [{ property: 'Date', direction: 'descending' }],
+        ...(limit ? { page_size: limit } : {}),
+      })
 
-    return response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(pageToSermonSummary)
-  } catch (error) {
-    console.error('Error fetching sermons:', error)
-    return []
-  }
+      return response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(pageToSermonSummary)
+    } catch (error) {
+      console.error('Error fetching sermons:', error)
+      return []
+    }
+  })
 }
 
 async function fetchSermonBySlug(slug: string): Promise<Sermon | null> {
@@ -353,26 +402,28 @@ async function fetchActiveGalleryImages(category?: string): Promise<GalleryImage
   const databaseId = getDbId('NOTION_GALLERY_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return []
 
-  try {
-    const filters: object[] = [
-      { property: 'Status', select: { equals: 'Active' } },
-    ]
-    if (category && category !== 'All') {
-      filters.push({ property: 'Category', select: { equals: category } })
+  return withCache(`gallery:${category ?? 'all'}`, async () => {
+    try {
+      const filters: object[] = [
+        { property: 'Status', select: { equals: 'Active' } },
+      ]
+      if (category && category !== 'All') {
+        filters.push({ property: 'Category', select: { equals: category } })
+      }
+
+      const response = await queryDatabase(databaseId, {
+        filter: filters.length === 1 ? filters[0] : { and: filters },
+        sorts: [{ property: 'Order', direction: 'ascending' }],
+      })
+
+      return response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(pageToGalleryImage)
+    } catch (error) {
+      console.error('Error fetching gallery:', error)
+      return []
     }
-
-    const response = await queryDatabase(databaseId, {
-      filter: filters.length === 1 ? filters[0] : { and: filters },
-      sorts: [{ property: 'Order', direction: 'ascending' }],
-    })
-
-    return response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(pageToGalleryImage)
-  } catch (error) {
-    console.error('Error fetching gallery:', error)
-    return []
-  }
+  })
 }
 
 // ── Recitations ──────────────────────────────────────────
@@ -391,18 +442,20 @@ async function fetchActiveRecitations(): Promise<Recitation[]> {
   const databaseId = getDbId('NOTION_RECITATIONS_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return []
 
-  try {
-    const response = await queryDatabase(databaseId, {
-      sorts: [{ property: 'Order', direction: 'ascending' }],
-    })
+  return withCache('recitations', async () => {
+    try {
+      const response = await queryDatabase(databaseId, {
+        sorts: [{ property: 'Order', direction: 'ascending' }],
+      })
 
-    return response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(pageToRecitation)
-  } catch (error) {
-    console.error('Error fetching recitations:', error)
-    return []
-  }
+      return response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(pageToRecitation)
+    } catch (error) {
+      console.error('Error fetching recitations:', error)
+      return []
+    }
+  })
 }
 
 // ── Site Settings ──────────────────────────────────────────
@@ -411,24 +464,26 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
   const databaseId = getDbId('NOTION_SETTINGS_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return {}
 
-  try {
-    const response = await queryDatabase(databaseId, {})
-    const settings: SiteSettings = {}
+  return withCache('settings', async () => {
+    try {
+      const response = await queryDatabase(databaseId, {})
+      const settings: SiteSettings = {}
 
-    for (const page of response.results) {
-      if (!('properties' in page)) continue
-      const p = page as PageObjectResponse
-      const key = (getPropertyValue(p.properties['Key']) as string) || ''
-      const value = (getPropertyValue(p.properties['Value']) as string) || ''
-      const updatedAt = (getPropertyValue(p.properties['Last edited time']) as string) || ''
-      if (key) settings[key] = { value, updatedAt }
+      for (const page of response.results) {
+        if (!('properties' in page)) continue
+        const p = page as PageObjectResponse
+        const key = (getPropertyValue(p.properties['Key']) as string) || ''
+        const value = (getPropertyValue(p.properties['Value']) as string) || ''
+        const updatedAt = (getPropertyValue(p.properties['Last edited time']) as string) || ''
+        if (key) settings[key] = { value, updatedAt }
+      }
+
+      return settings
+    } catch (error) {
+      console.error('Error fetching site settings:', error)
+      return {}
     }
-
-    return settings
-  } catch (error) {
-    console.error('Error fetching site settings:', error)
-    return {}
-  }
+  })
 }
 
 // ── About Page ──────────────────────────────────────────
@@ -437,48 +492,58 @@ async function fetchAboutPage(): Promise<AboutPage | null> {
   const databaseId = getDbId('NOTION_ABOUT_DATABASE_ID')
   if (!isNotionConfigured() || !databaseId) return null
 
-  try {
-    const response = await queryDatabase(databaseId, {
-      filter: { property: 'Status', select: { equals: 'Published' } },
-      page_size: 1,
-    })
+  return withCache('about', async () => {
+    try {
+      const response = await queryDatabase(databaseId, {
+        filter: { property: 'Status', select: { equals: 'Published' } },
+        page_size: 1,
+      })
 
-    const page = response.results[0]
-    if (!page || !('properties' in page)) return null
+      const page = response.results[0]
+      if (!page || !('properties' in page)) return null
 
-    const p = page as PageObjectResponse
-    const props = p.properties
+      const p = page as PageObjectResponse
+      const props = p.properties
 
-    const blocks = await getAllBlockChildren(p.id)
-    const content = parseBlocksToContent(blocks)
+      const blocks = await getAllBlockChildren(p.id)
+      const content = parseBlocksToContent(blocks)
 
-    return {
-      id: p.id,
-      title: (getPropertyValue(props['Title']) as string) || '',
-      subtitleAr: (getPropertyValue(props['Subtitle AR']) as string) || '',
-      content,
+      return {
+        id: p.id,
+        title: (getPropertyValue(props['Title']) as string) || '',
+        subtitleAr: (getPropertyValue(props['Subtitle AR']) as string) || '',
+        content,
+      }
+    } catch (error) {
+      console.error('Error fetching about page:', error)
+      return null
     }
-  } catch (error) {
-    console.error('Error fetching about page:', error)
-    return null
-  }
+  })
 }
 
 // ── Server Functions (exported for routes) ──────────────────
 
 export const getPublishedArticles = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const data = (ctx as Record<string, unknown>).data as { language?: string; category?: string; limit?: number } | undefined
-  return fetchPublishedArticles(data || {})
 })
+  .inputValidator(
+    z.object({
+      language: z.string().optional(),
+      category: z.string().optional(),
+      limit: z.number().int().positive().optional(),
+    }).optional(),
+  )
+  .handler(async ({ data }) => {
+    return fetchPublishedArticles(data ?? {})
+  })
 
 export const getArticleBySlug = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const slug = (ctx as Record<string, unknown>).data as string
-  return fetchArticleBySlug(slug)
 })
+  .inputValidator(z.string().min(1).max(500))
+  .handler(async ({ data: slug }) => {
+    return fetchArticleBySlug(slug)
+  })
 
 export const getActiveServices = createServerFn({
   method: 'GET',
@@ -488,24 +553,27 @@ export const getActiveServices = createServerFn({
 
 export const getPublishedSermons = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const limit = (ctx as Record<string, unknown>).data as number | undefined
-  return fetchPublishedSermons(limit)
 })
+  .inputValidator(z.number().int().positive().optional())
+  .handler(async ({ data: limit }) => {
+    return fetchPublishedSermons(limit ?? undefined)
+  })
 
 export const getSermonBySlug = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const slug = (ctx as Record<string, unknown>).data as string
-  return fetchSermonBySlug(slug)
 })
+  .inputValidator(z.string().min(1).max(500))
+  .handler(async ({ data: slug }) => {
+    return fetchSermonBySlug(slug)
+  })
 
 export const getGalleryImages = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const category = (ctx as Record<string, unknown>).data as string | undefined
-  return fetchActiveGalleryImages(category)
 })
+  .inputValidator(z.string().optional())
+  .handler(async ({ data: category }) => {
+    return fetchActiveGalleryImages(category ?? undefined)
+  })
 
 export const getActiveRecitations = createServerFn({
   method: 'GET',
@@ -521,38 +589,40 @@ export const getSiteSettings = createServerFn({
 
 export const getLatestArticles = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const limit = (ctx as Record<string, unknown>).data as number
-  return fetchPublishedArticles({ limit })
 })
+  .inputValidator(z.number().int().positive())
+  .handler(async ({ data: limit }) => {
+    return fetchPublishedArticles({ limit })
+  })
 
 export const getFeaturedArticles = createServerFn({
   method: 'GET',
-}).handler(async (ctx) => {
-  const limit = (ctx as Record<string, unknown>).data as number
-  const databaseId = getDbId('NOTION_ARTICLES_DATABASE_ID')
-  if (!isNotionConfigured() || !databaseId) return []
-
-  try {
-    const response = await queryDatabase(databaseId, {
-      filter: {
-        and: [
-          { property: 'Status', select: { equals: 'Published' } },
-          { property: 'Featured', checkbox: { equals: true } },
-        ],
-      },
-      sorts: [{ timestamp: 'created_time', direction: 'descending' }],
-      page_size: limit,
-    })
-
-    return response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(pageToArticleSummary)
-  } catch (error) {
-    console.error('Error fetching featured articles:', error)
-    return []
-  }
 })
+  .inputValidator(z.number().int().positive())
+  .handler(async ({ data: limit }) => {
+    const databaseId = getDbId('NOTION_ARTICLES_DATABASE_ID')
+    if (!isNotionConfigured() || !databaseId) return []
+
+    try {
+      const response = await queryDatabase(databaseId, {
+        filter: {
+          and: [
+            { property: 'Status', select: { equals: 'Published' } },
+            { property: 'Featured', checkbox: { equals: true } },
+          ],
+        },
+        sorts: [{ timestamp: 'created_time', direction: 'descending' }],
+        page_size: limit,
+      })
+
+      return response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(pageToArticleSummary)
+    } catch (error) {
+      console.error('Error fetching featured articles:', error)
+      return []
+    }
+  })
 
 export const getAboutPage = createServerFn({
   method: 'GET',

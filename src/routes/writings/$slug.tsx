@@ -43,6 +43,25 @@ export const Route = createFileRoute('/writings/$slug')({
     }
   },
   component: ArticlePage,
+  errorComponent: ({ error }) => (
+    <Container size="narrow">
+      <div className="py-24 text-center">
+        <h1 className="text-3xl font-bold text-foreground">Article Not Found</h1>
+        <p className="mt-4 text-muted-foreground">
+          {error instanceof Error && error.message === 'Article not found'
+            ? "This article doesn't exist or has been removed."
+            : 'Something went wrong loading this article.'}
+        </p>
+        <Link
+          to="/writings"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          Back to Writings
+        </Link>
+      </div>
+    </Container>
+  ),
 })
 
 function ArticlePage() {

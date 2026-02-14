@@ -3,6 +3,7 @@ import { BookOpen, Radio, Youtube } from 'lucide-react'
 import { Container } from '@/components/layout/Container'
 import { getActiveRecitations, getSiteSettings } from '@/lib/notion'
 import { getBreadcrumbSchema, getMediaMeta, siteConfig } from '@/lib/seo'
+import { getYouTubeEmbedUrl, getStreamStatus, YOUTUBE_CHANNEL_URL } from '@/lib/youtube'
 
 export const Route = createFileRoute('/media')({
   loader: async () => {
@@ -30,50 +31,6 @@ export const Route = createFileRoute('/media')({
   },
   component: MediaPage,
 })
-
-function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url || typeof url !== 'string') return null
-  const watchMatch = url.match(/[?&]v=([^&]+)/)
-  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`
-  const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`
-  const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/)
-  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}`
-  return null
-}
-
-function getStreamStatus(dateStr: string | undefined): { isLive: boolean; timeAgo: string | null } {
-  if (!dateStr) return { isLive: false, timeAgo: null }
-
-  const streamDate = new Date(dateStr)
-  if (isNaN(streamDate.getTime())) return { isLive: false, timeAgo: null }
-
-  const now = new Date()
-  const diffMs = now.getTime() - streamDate.getTime()
-  if (diffMs < 0) return { isLive: false, timeAgo: null }
-
-  const fourHours = 4 * 60 * 60 * 1000
-  if (diffMs < fourHours) {
-    return { isLive: true, timeAgo: null }
-  }
-
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  const diffWeeks = Math.floor(diffDays / 7)
-
-  let timeAgo: string
-  if (diffHours < 24) {
-    timeAgo = `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-  } else if (diffDays < 7) {
-    timeAgo = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
-  } else if (diffWeeks < 5) {
-    timeAgo = `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`
-  } else {
-    timeAgo = streamDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  }
-
-  return { isLive: false, timeAgo }
-}
 
 function MediaPage() {
   const { settings, recitations } = Route.useLoaderData()
@@ -192,7 +149,7 @@ function MediaPage() {
 
             {/* YouTube Channel Banner */}
             <a
-              href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
+              href={YOUTUBE_CHANNEL_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between rounded-xl bg-card ring-1 ring-foreground/10 px-6 py-4 transition-colors hover:bg-accent/50"

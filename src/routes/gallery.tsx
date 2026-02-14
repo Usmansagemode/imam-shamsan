@@ -5,17 +5,8 @@ import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { GalleryLightbox } from '@/components/gallery/GalleryLightbox'
 import { getGalleryImages } from '@/lib/notion'
 import { getGalleryMeta, getBreadcrumbSchema, siteConfig } from '@/lib/seo'
+import { GALLERY_CATEGORIES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-
-const GALLERY_CATEGORIES = [
-  'All',
-  'Events',
-  'Conferences',
-  'Community',
-  'Scholars',
-  'Programs',
-  'Flyers',
-]
 
 export const Route = createFileRoute('/gallery')({
   loader: async () => {
@@ -75,11 +66,12 @@ function GalleryPage() {
       <section className="py-12">
         <Container>
           {/* Category filter */}
-          <div className="mb-8 flex flex-wrap gap-2">
+          <div role="group" aria-label="Filter by category" className="mb-8 flex flex-wrap gap-2">
             {GALLERY_CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
+                aria-pressed={category === cat}
                 className={cn(
                   'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                   category === cat

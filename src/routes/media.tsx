@@ -3,7 +3,7 @@ import { BookOpen, Radio, Youtube } from 'lucide-react'
 import { Container } from '@/components/layout/Container'
 import { getActiveRecitations, getSiteSettings } from '@/lib/notion'
 import { getBreadcrumbSchema, getMediaMeta, siteConfig } from '@/lib/seo'
-import { getYouTubeEmbedUrl, getStreamStatus, YOUTUBE_CHANNEL_URL } from '@/lib/youtube'
+import { getYouTubeEmbedUrl, getStreamStatus } from '@/lib/youtube'
 
 export const Route = createFileRoute('/media')({
   loader: async () => {
@@ -37,6 +37,7 @@ function MediaPage() {
 
   const liveStreamUrl = settings.live_stream_url?.value
   const liveStreamTitle = settings.live_stream_title?.value || 'Weekly Live Stream'
+  const youtubeChannelUrl = settings.youtube_url?.value || 'https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg'
   const embedUrl = liveStreamUrl ? getYouTubeEmbedUrl(liveStreamUrl) : null
   const { isLive, timeAgo } = getStreamStatus(settings.live_stream_url?.updatedAt)
 
@@ -149,7 +150,7 @@ function MediaPage() {
 
             {/* YouTube Channel Banner */}
             <a
-              href={YOUTUBE_CHANNEL_URL}
+              href={youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between rounded-xl bg-card ring-1 ring-foreground/10 px-6 py-4 transition-colors hover:bg-accent/50"

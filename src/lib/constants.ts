@@ -12,9 +12,10 @@ export const GALLERY_CATEGORIES = [
 /** Article categories matching Notion's Category select property */
 export const ARTICLE_CATEGORIES = [
   'Islamic Knowledge',
-  'Quran & Tafsir',
-  'Community',
-  'Spiritual Growth',
+  'Quran/Hadith Commentary',
+  'Ramadan/Eid',
+  'Personal Reflections',
+  'Islamic History',
 ] as const
 
 /** Supported article languages */

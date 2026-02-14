@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Mail, Youtube, Facebook, Instagram } from 'lucide-react'
 import { Container } from '@/components/layout/Container'
 import { ContactForm } from '@/components/contact/ContactForm'
-import { getActiveServices } from '@/lib/notion'
+import { getActiveServices, getSiteSettings } from '@/lib/notion'
 import { getContactMeta, getBreadcrumbSchema, siteConfig } from '@/lib/seo'
 
 interface ContactSearch {
@@ -14,8 +14,11 @@ export const Route = createFileRoute('/contact')({
     service: (search.service as string) || undefined,
   }),
   loader: async () => {
-    const services = await getActiveServices()
-    return { services }
+    const [services, settings] = await Promise.all([
+      getActiveServices(),
+      getSiteSettings(),
+    ])
+    return { services, settings }
   },
   head: () => {
     const { meta, links } = getContactMeta()
@@ -37,8 +40,12 @@ export const Route = createFileRoute('/contact')({
 })
 
 function ContactPage() {
-  const { services } = Route.useLoaderData()
+  const { services, settings } = Route.useLoaderData()
   const { service } = Route.useSearch()
+
+  const youtubeUrl = settings.youtube_url?.value || 'https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg'
+  const facebookUrl = settings.facebook_url?.value || 'https://www.facebook.com/shamsan.aljabi.2025'
+  const instagramUrl = settings.instagram_url?.value || 'https://www.instagram.com/dr.sham_san/'
 
   return (
     <>
@@ -98,7 +105,7 @@ function ContactPage() {
                 </h3>
                 <div className="flex gap-4">
                   <a
-                    href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
+                    href={youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -107,7 +114,7 @@ function ContactPage() {
                     YouTube
                   </a>
                   <a
-                    href="https://www.facebook.com/shamsan.aljabi.2025"
+                    href={facebookUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -116,7 +123,7 @@ function ContactPage() {
                     Facebook
                   </a>
                   <a
-                    href="https://www.instagram.com/dr.sham_san/"
+                    href={instagramUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"

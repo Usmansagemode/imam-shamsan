@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight, Youtube } from 'lucide-react'
 import { Container } from '@/components/layout/Container'
 import { Button } from '@/components/ui/button'
-import { getYouTubeEmbedUrl, getStreamStatus, YOUTUBE_CHANNEL_URL } from '@/lib/youtube'
+import { getYouTubeEmbedUrl, getStreamStatus } from '@/lib/youtube'
 import type { SiteSettings } from '@/types/settings'
 
 interface MediaHighlightProps {
@@ -12,6 +12,7 @@ interface MediaHighlightProps {
 export function MediaHighlight({ settings }: MediaHighlightProps) {
   const liveStreamUrl = settings.live_stream_url?.value
   const liveStreamTitle = settings.live_stream_title?.value || 'Weekly Live Stream'
+  const youtubeChannelUrl = settings.youtube_url?.value || 'https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg'
   const embedUrl = liveStreamUrl ? getYouTubeEmbedUrl(liveStreamUrl) : null
   const { isLive, timeAgo } = getStreamStatus(settings.live_stream_url?.updatedAt)
 
@@ -80,7 +81,7 @@ export function MediaHighlight({ settings }: MediaHighlightProps) {
               </p>
               <div className="mt-4">
                 <a
-                  href={YOUTUBE_CHANNEL_URL}
+                  href={youtubeChannelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

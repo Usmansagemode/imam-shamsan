@@ -29,12 +29,20 @@ function validateForm(state: { name: string; email: string; message: string }): 
   return errors
 }
 
+function toSlug(name: string): string {
+  return name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+}
+
 export function ContactForm({ services, preselectedService }: ContactFormProps) {
+  const matchedService = preselectedService
+    ? services.find((s) => toSlug(s.nameEn) === preselectedService)?.nameEn ?? ''
+    : ''
+
   const [formState, setFormState] = useState({
     name: '',
     email: '',
     phone: '',
-    service: preselectedService || '',
+    service: matchedService,
     eventLocation: '',
     message: '',
   })

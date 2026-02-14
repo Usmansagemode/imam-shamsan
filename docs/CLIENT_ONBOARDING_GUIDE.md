@@ -279,7 +279,7 @@ The Media page displays Qur'anic recitation videos. Each entry is one YouTube vi
 
 ---
 
-### Updating Site Settings (Live Stream, Profile Image, Logo)
+### Updating Site Settings (Live Stream, Profile Image, Logo, Social Links)
 
 The Site Settings database contains key-value pairs that control parts of the website. You update these by editing the **"Value"** field of the relevant row.
 
@@ -289,6 +289,9 @@ The Site Settings database contains key-value pairs that control parts of the we
 | `live_stream_title` | Title displayed above the live stream (e.g., "Friday Khutbah - Week of Feb 14") |
 | `profile_img`       | Your profile photo shown on the About page                |
 | `logo`              | The logo displayed in the website header                  |
+| `youtube_url`       | Your YouTube channel link (shown in footer, contact, and media pages) |
+| `facebook_url`      | Your Facebook page link (shown in footer and contact page) |
+| `instagram_url`     | Your Instagram profile link (shown in footer and contact page) |
 
 **To update the weekly live stream:**
 1. Open Notion > **Site Settings** database
@@ -302,6 +305,11 @@ The Site Settings database contains key-value pairs that control parts of the we
 3. Open Notion > **Site Settings** database
 4. Find the `profile_img` or `logo` row
 5. Replace the **"Value"** with the new Cloudinary URL
+
+**To update your social media links:**
+1. Open Notion > **Site Settings** database
+2. Find the row for the platform you want to update (`youtube_url`, `facebook_url`, or `instagram_url`)
+3. Replace the **"Value"** with the new link
 
 ---
 

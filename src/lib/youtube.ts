@@ -65,4 +65,3 @@ export function getStreamStatus(dateStr: string | undefined): { isLive: boolean;
   return { isLive: false, timeAgo }
 }
 
-export const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg'

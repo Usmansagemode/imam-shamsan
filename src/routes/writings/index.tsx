@@ -5,14 +5,7 @@ import { ArticleGrid } from '@/components/articles/ArticleGrid'
 import { LanguageFilter } from '@/components/articles/LanguageFilter'
 import { getPublishedArticles } from '@/lib/notion'
 import { getWritingsListMeta, getBreadcrumbSchema, siteConfig } from '@/lib/seo'
-
-const CATEGORIES = [
-  'Islamic Knowledge',
-  'Quran/Hadith Commentary',
-  'Ramadan/Eid',
-  'Personal Reflections',
-  'Islamic History',
-]
+import { ARTICLE_CATEGORIES } from '@/lib/constants'
 
 export const Route = createFileRoute('/writings/')({
   loader: async () => {
@@ -70,7 +63,7 @@ function WritingsPage() {
             <LanguageFilter
               selected={language}
               onSelect={setLanguage}
-              categories={CATEGORIES}
+              categories={[...ARTICLE_CATEGORIES]}
               selectedCategory={category}
               onCategorySelect={setCategory}
             />

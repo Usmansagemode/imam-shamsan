@@ -14,6 +14,7 @@ import { ThemeProvider } from '@/lib/theme'
 import { getSiteSettings } from '@/lib/notion'
 import { getOptimizedUrl } from '@/lib/cloudinary'
 import { getBaseMeta, siteConfig } from '@/lib/seo'
+import type { SiteSettings } from '@/types/settings'
 
 import appCss from '../styles.css?url'
 
@@ -73,7 +74,7 @@ function RootComponent() {
   const logoUrl = settings.logo?.value
 
   return (
-    <RootDocument logoUrl={logoUrl}>
+    <RootDocument logoUrl={logoUrl} settings={settings}>
       <Outlet />
     </RootDocument>
   )
@@ -127,7 +128,7 @@ function RootError({ error }: { error: unknown }) {
   )
 }
 
-function RootDocument({ children, logoUrl }: { children: React.ReactNode; logoUrl?: string }) {
+function RootDocument({ children, logoUrl, settings }: { children: React.ReactNode; logoUrl?: string; settings?: SiteSettings }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -137,7 +138,7 @@ function RootDocument({ children, logoUrl }: { children: React.ReactNode; logoUr
         <ThemeProvider>
           <Header logoUrl={logoUrl} />
           <main className="flex-1">{children}</main>
-          <Footer />
+          <Footer settings={settings} />
         </ThemeProvider>
         <Scripts />
       </body>

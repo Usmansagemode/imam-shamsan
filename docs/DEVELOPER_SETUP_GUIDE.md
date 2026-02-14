@@ -261,12 +261,17 @@ Create each database as a **full-page database** in Notion. Property names must 
 | live_stream_title  | `Friday Khutbah - Week of Feb 14`                  |
 | profile_img        | `https://res.cloudinary.com/.../profile.jpg`       |
 | logo               | `https://res.cloudinary.com/.../logo.jpg`          |
+| youtube_url        | `https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg` |
+| facebook_url       | `https://www.facebook.com/shamsan.aljabi.2025`     |
+| instagram_url      | `https://www.instagram.com/dr.sham_san/`           |
 
 **How the code uses it:**
-- Settings are loaded in the root layout (`__root.tsx`) and passed to Header (logo) and child routes
+- Settings are loaded in the root layout (`__root.tsx`) and passed to Header (logo) and Footer (social links)
 - The homepage (`index.tsx`) passes settings to `HeroSection` and `MediaHighlight`
 - The about page uses `profile_img`
-- The media page uses `live_stream_url` and `live_stream_title`
+- The media page uses `live_stream_url`, `live_stream_title`, and `youtube_url`
+- The contact page uses `youtube_url`, `facebook_url`, and `instagram_url`
+- The footer uses `youtube_url`, `facebook_url`, and `instagram_url`
 
 **Env variable:** `NOTION_SETTINGS_DATABASE_ID`
 
@@ -359,7 +364,7 @@ The site uses TanStack Router's file-based routing. All routes are in `src/route
 | `layout/Header.tsx`                | Navigation + logo (from settings) + theme toggle |
 | `layout/Footer.tsx`                | Footer with links and social icons             |
 | `layout/Container.tsx`             | Max-width wrapper                              |
-| `layout/ThemeToggle.tsx`           | Dark/light mode toggle (localStorage)          |
+| `layout/ThemeToggle.tsx`           | Dark/light mode toggle (uses ThemeProvider context) |
 | `home/HeroSection.tsx`             | Homepage hero with live stream indicator        |
 | `home/ServicesPreview.tsx`         | Homepage services preview                      |
 | `home/LatestWritings.tsx`          | Homepage latest articles                       |
@@ -383,12 +388,16 @@ The site uses TanStack Router's file-based routing. All routes are in `src/route
 
 | File                    | Purpose                                           |
 |-------------------------|---------------------------------------------------|
-| `lib/notion.ts`         | All Notion API queries + server functions          |
+| `lib/notion.ts`         | All Notion API queries + server functions (with in-memory TTL cache) |
 | `lib/parsers.ts`        | Notion block → `ContentBlock` parser               |
-| `lib/cloudinary.ts`     | Cloudinary URL transformation helpers              |
-| `lib/email.ts`          | Resend API integration for contact form            |
+| `lib/cloudinary.ts`     | Cloudinary URL transformation helpers (presets, srcSet, blur placeholders) |
+| `lib/email.ts`          | Resend API integration for contact form (zod-validated) |
 | `lib/seo.ts`            | SEO meta tags, Open Graph, JSON-LD schemas         |
-| `lib/utils.ts`          | Utility functions (cn, etc.)                       |
+| `lib/youtube.ts`        | YouTube URL utilities (embed, thumbnail, stream status). Channel URL comes from Site Settings. |
+| `lib/theme.tsx`         | Theme context provider (dark/light mode)           |
+| `lib/content.ts`        | Content layout utilities (section splitting, card extraction) |
+| `lib/constants.ts`      | Shared constants (categories, languages)           |
+| `lib/utils.ts`          | Utility functions (cn, formatDate, slugify)        |
 
 ---
 
@@ -502,13 +511,13 @@ For the contact form email to work in production:
 
 ## 10. External Accounts & Social Links
 
-These external links are hardcoded in the site (primarily in the contact page and media page):
+Social media links are managed via the **Site Settings** Notion database (`youtube_url`, `facebook_url`, `instagram_url`). The imam can update them at any time without code changes. Hardcoded fallback defaults are used if the settings are not configured.
 
-| Platform   | URL                                                          | Used In          |
-|------------|--------------------------------------------------------------|------------------|
-| YouTube    | `https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg`  | Media page, Contact page, Footer |
-| Facebook   | `https://www.facebook.com/shamsan.aljabi.2025`               | Contact page, Footer |
-| Instagram  | `https://www.instagram.com/dr.sham_san/`                     | Contact page, Footer |
+| Platform   | Settings Key     | Default URL                                                  | Used In          |
+|------------|------------------|--------------------------------------------------------------|------------------|
+| YouTube    | `youtube_url`    | `https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg`  | Media page, Homepage, Contact page, Footer |
+| Facebook   | `facebook_url`   | `https://www.facebook.com/shamsan.aljabi.2025`               | Contact page, Footer |
+| Instagram  | `instagram_url`  | `https://www.instagram.com/dr.sham_san/`                     | Contact page, Footer |
 
 **Contact email:** `MCCGPImamShamsan@gmail.com` (configured via `CONTACT_EMAIL` env var)
 

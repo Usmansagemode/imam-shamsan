@@ -1,8 +1,16 @@
 import { Link } from '@tanstack/react-router'
 import { Youtube, Facebook, Instagram, Mail } from 'lucide-react'
 import { Container } from './Container'
+import type { SiteSettings } from '@/types/settings'
 
-export function Footer() {
+interface FooterProps {
+  settings?: SiteSettings
+}
+
+export function Footer({ settings }: FooterProps) {
+  const youtubeUrl = settings?.youtube_url?.value || 'https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg'
+  const facebookUrl = settings?.facebook_url?.value || 'https://www.facebook.com/shamsan.aljabi.2025'
+  const instagramUrl = settings?.instagram_url?.value || 'https://www.instagram.com/dr.sham_san/'
   return (
     <footer className="mt-auto border-t border-border bg-muted/30 py-8">
       <Container>
@@ -54,7 +62,7 @@ export function Footer() {
             </h3>
             <div className="mt-2 flex gap-3">
               <a
-                href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
+                href={youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -63,7 +71,7 @@ export function Footer() {
                 <Youtube className="size-5" />
               </a>
               <a
-                href="https://www.facebook.com/shamsan.aljabi.2025"
+                href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -72,7 +80,7 @@ export function Footer() {
                 <Facebook className="size-5" />
               </a>
               <a
-                href="https://www.instagram.com/dr.sham_san/"
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"

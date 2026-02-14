@@ -1,32 +1,21 @@
-# Client Onboarding Guide — Masjid Website
+# Client Onboarding Guide — Imam Shamsan Website
 
-Welcome! This guide walks you through creating the accounts needed for your website and shows you how to manage your content once the site is live.
+Welcome! This guide walks you through the accounts needed for your website and shows you how to manage your content once the site is live.
 
 ---
 
 ## Table of Contents
 
-- [Client Onboarding Guide — Masjid Website](#client-onboarding-guide--masjid-website)
-  - [Table of Contents](#table-of-contents)
-  - [Accounts to Create](#accounts-to-create)
-    - [1. Notion — Content Management](#1-notion--content-management)
-    - [2. Cloudinary — Image Hosting](#2-cloudinary--image-hosting)
-    - [3. GitHub — Code Repository](#3-github--code-repository)
-    - [4. Vercel — Website Hosting](#4-vercel--website-hosting)
-    - [5. Namecheap — Domain Name](#5-namecheap--domain-name)
-  - [Managing Your Website Content](#managing-your-website-content)
-    - [Arabic \& English](#arabic--english)
-    - [Editing Sermon Summaries in Notion](#editing-sermon-summaries-in-notion)
-    - [Managing Gallery \& Engagements](#managing-gallery--engagements)
-    - [Uploading Images to Cloudinary](#uploading-images-to-cloudinary)
-  - [Cloudinary Folder Structure](#cloudinary-folder-structure)
-  - [Quick Reference Cheat Sheet](#quick-reference-cheat-sheet)
-    - ["I want to add a new sermon summary"](#i-want-to-add-a-new-sermon-summary)
-    - ["I want to add a photo inside a sermon or event description"](#i-want-to-add-a-photo-inside-a-sermon-or-event-description)
-    - ["I want to add photos from an event"](#i-want-to-add-photos-from-an-event)
-    - ["I want to update the homepage banner"](#i-want-to-update-the-homepage-banner)
-    - ["I want to hide something from the website"](#i-want-to-hide-something-from-the-website)
-    - [Need help?](#need-help)
+- [Accounts to Create](#accounts-to-create)
+- [Managing Your Website Content](#managing-your-website-content)
+  - [Arabic & English](#arabic--english)
+  - [Adding & Editing Writings (Articles)](#adding--editing-writings-articles)
+  - [Adding & Editing Sermon Summaries](#adding--editing-sermon-summaries)
+  - [Managing Gallery Photos](#managing-gallery-photos)
+  - [Managing Recitations](#managing-recitations)
+  - [Updating Site Settings (Live Stream, Profile Image, Logo)](#updating-site-settings-live-stream-profile-image-logo)
+  - [Uploading Images to Cloudinary](#uploading-images-to-cloudinary)
+- [Quick Reference Cheat Sheet](#quick-reference-cheat-sheet)
 
 ---
 
@@ -46,13 +35,13 @@ You will need to create **5 accounts**. Each one serves a specific purpose for y
 
 ### 1. Notion — Content Management
 
-Notion is where you will write and update your website content (sermon summaries, event descriptions, announcements).
+Notion is where you will write and update your website content (writings, sermon summaries, gallery captions, recitation entries, and site settings).
 
 **Create your account:**
 1. Go to [https://www.notion.so/signup](https://www.notion.so/signup)
 2. Sign up with your email address
 3. Choose the **Free** plan (it has everything you need)
-4. Create a workspace — name it after your masjid (e.g., "Al-Noor Masjid")
+4. Create a workspace — name it something like "Imam Shamsan Website"
 
 **After creating your account:**
 - Share your workspace with the developer by clicking **"Settings & Members"** in the left sidebar
@@ -63,13 +52,13 @@ Notion is where you will write and update your website content (sermon summaries
 
 ### 2. Cloudinary — Image Hosting
 
-Cloudinary stores and delivers all the photos on your website (gallery images, banners, team photos).
+Cloudinary stores and delivers all the photos on your website (gallery images, article cover images, profile photo, logo).
 
 **Create your account:**
 1. Go to [https://cloudinary.com/users/register/free](https://cloudinary.com/users/register/free)
 2. Sign up with your email
 3. Choose the **Free** plan (25 GB storage, more than enough to start)
-4. Pick a **Cloud Name** — use something recognizable like your masjid name (e.g., `alnoor-masjid`)
+4. Pick a **Cloud Name** — use something recognizable (e.g., `imam-shamsan`)
 
 **After creating your account:**
 - Go to **Settings** (gear icon, bottom-left) > **Account** > **Users**
@@ -90,14 +79,15 @@ GitHub stores your website's code. You won't need to interact with it day-to-day
 3. Choose the **Free** plan
 4. Verify your email address
 
-**After creating your account:**
-- Share your GitHub username with the developer so they can add you to the repository
+**Connecting to your website code:**
+
+The developer will create a **GitHub Organization** (a shared space for the code) and invite you as a member. This lets both you and the developer manage the repository, and allows you to connect it to Vercel for hosting.
 
 ---
 
 ### 4. Vercel — Website Hosting
 
-Vercel is the service that makes your website available on the internet. It automatically updates your site when changes are made.
+Vercel is the service that makes your website available on the internet. It automatically updates your site when changes are made to the code.
 
 **Create your account:**
 1. Go to [https://vercel.com/signup](https://vercel.com/signup)
@@ -105,20 +95,20 @@ Vercel is the service that makes your website available on the internet. It auto
 3. Authorize Vercel to access your GitHub
 4. Choose the **Hobby** (Free) plan
 
-**After creating your account:**
-- Go to **Settings** > **Members**
-- Invite `usmansagemode@gmail.com` as a **Member** so the developer can deploy your site
+**After the GitHub Organization is set up:**
+- The developer will walk you through connecting the repository to your Vercel account
+- Once connected, the website will automatically redeploy whenever code changes are pushed
 
 ---
 
 ### 5. Namecheap — Domain Name
 
-Namecheap is where you purchase your website address (e.g., `www.yourmasjid.com`).
+Namecheap is where you purchase your website address (e.g., `www.imamshamsan.com`).
 
 **Purchase your domain:**
 1. Go to [https://www.namecheap.com](https://www.namecheap.com)
 2. Create an account
-3. Search for your desired domain name (e.g., `yourmasjidname.com`)
+3. Search for your desired domain name
 4. Add it to your cart and complete the purchase (~$10/year for `.com`)
 5. **Important:** Keep **AutoRenew** turned on so your domain doesn't expire
 
@@ -138,8 +128,19 @@ Namecheap is where you purchase your website address (e.g., `www.yourmasjid.com`
 ## Managing Your Website Content
 
 Once the website is built, you will manage content through **two tools**:
-- **Notion** — for all text content (sermon summaries, event descriptions, announcements)
-- **Cloudinary** — for photos and images
+- **Notion** — for all text content, metadata, and links
+- **Cloudinary** — for uploading photos and images
+
+Your website has **6 Notion databases**:
+
+| Database           | What It Controls                                    |
+|--------------------|-----------------------------------------------------|
+| Articles           | Writings/articles on the Writings page              |
+| Services           | Services listed on the Services page                |
+| Sermon Summaries   | Written khutbah summaries on the Sermons page       |
+| Gallery            | Individual photos on the Gallery page               |
+| Recitations        | Qur'anic recitation videos on the Media page        |
+| Site Settings      | Live stream URL, profile image, logo                |
 
 ### Arabic & English
 
@@ -150,79 +151,138 @@ Notion fully supports Arabic on the free plan. You can write in Arabic, English,
 
 ---
 
-### Editing Sermon Summaries in Notion
+### Adding & Editing Writings (Articles)
 
-The Sermon Summaries section is **text-based**. You write the full sermon content directly inside each Notion page.
+The Writings section shows your articles, reflections, and Islamic knowledge pieces. You write the full content directly inside each Notion page.
 
-**To add a new sermon summary:**
-1. Open Notion and go to the **"Sermon Summaries"** database
+**To add a new article:**
+1. Open Notion and go to the **"Articles"** database
 2. Click **"+ New"** at the bottom of the table to create a new entry
 3. Fill in the properties at the top of the page:
-   - **Title** — Name of the sermon (e.g., "The Importance of Patience" or "أهمية الصبر")
-   - **Date** — Select the date it was delivered
-   - **Speaker** — Choose or type the imam's name
-   - **Tags** — Select relevant topics (e.g., Faith, Ramadan, Community)
-   - **Published** — Check this box when you want it to appear on the website
-4. **Write the sermon content in the page body below the properties.** This is where you type the actual sermon summary. You can write in Arabic, English, or both — just type naturally. Formatting options:
-   - **Bold** text: Select text and press `Ctrl+B` (or `Cmd+B` on Mac)
-   - *Italic* text: Select text and press `Ctrl+I` (or `Cmd+I` on Mac)
+   - **Title** — Name of the article
+   - **Slug** — URL-friendly identifier (e.g., `patience-in-islam`). Use lowercase, hyphens instead of spaces, no special characters.
+   - **Description** — A short summary shown on article cards (1-2 sentences)
+   - **Cover Image** — Paste a Cloudinary URL for the article's cover image (see "Uploading Images to Cloudinary" below)
+   - **Language** — Select `English`, `Arabic`, or `Bilingual`
+   - **Category** — Select a topic: Islamic Knowledge, Quran/Hadith Commentary, Ramadan/Eid, Personal Reflections, or Islamic History
+   - **Tags** — Select relevant tags (e.g., Faith, Family, Youth)
+   - **Featured** — Check this to show the article on the homepage
+   - **Status** — Set to `Published` when ready to go live (keep as `Draft` while writing)
+4. **Write the article content in the page body below the properties.** Formatting options:
+   - **Bold** text: Select text and press `Cmd+B`
+   - *Italic* text: Select text and press `Cmd+I`
    - Headings: Type `/heading` and select Heading 2 or Heading 3
    - Bullet lists: Type `-` followed by a space
    - Numbered lists: Type `1.` followed by a space
    - Quotes (for Hadith or Quran verses): Type `/quote` and select Quote
    - Divider line: Type `/divider`
-5. The website will automatically show the new sermon on the next update
+5. The website will automatically show the new article once `Status` is set to `Published`
 
-**To add an image inside a sermon (optional):**
-
-If you want to include a photo in the middle of your text (for example, a photo from the event):
+**To add an image inside an article (optional):**
 1. First, upload the image to Cloudinary (see "Uploading Images to Cloudinary" below)
 2. Copy the image URL from Cloudinary
 3. In your Notion page, click where you want the image to appear
 4. Type `/image` and press Enter
 5. Select **"Embed link"** (do NOT select "Upload" — uploaded images will break after 1 hour)
 6. Paste the Cloudinary URL and press Enter
-7. Optionally add a caption below the image
 
-**To edit an existing sermon:**
-1. Click on any row in the Sermon Summaries database
-2. Make your changes directly in the page body
+**To edit an existing article:**
+1. Click on any row in the Articles database
+2. Make your changes directly
 3. Changes save automatically in Notion
 4. The website will reflect the changes on the next update
 
-**To hide a sermon from the website:**
-- Uncheck the **"Published"** checkbox — the sermon stays in your database but won't appear on the site
+**To hide an article from the website:**
+- Change the **"Status"** to `Draft` — it stays in your database but won't appear on the site
 
 ---
 
-### Managing Gallery & Engagements
+### Adding & Editing Sermon Summaries
 
-The Gallery section combines **Notion** (for titles and descriptions) with **Cloudinary** (for the actual photos).
+The Sermon Summaries section is for written summaries of Friday khutbahs. Each entry can optionally link to a YouTube video recording.
 
-**To add a new gallery/event entry:**
-
-**Step 1 — Upload photos to Cloudinary** (see next section)
-
-**Step 2 — Create the entry in Notion:**
-1. Open the **"Gallery & Engagements"** database in Notion
+**To add a new sermon summary:**
+1. Open Notion and go to the **"Sermon Summaries"** database
 2. Click **"+ New"** to create a new entry
 3. Fill in the properties at the top:
-   - **Title** — Name of the event or album (e.g., "Eid ul-Fitr Celebration 2024" or "احتفال عيد الفطر ٢٠٢٤")
-   - **Date** — Select the event date
-   - **Category** — Choose the type (Event, Community, Facility)
-   - **Cloudinary Folder** — Enter the folder path where you uploaded the images (e.g., `gallery/events/eid-ul-fitr-2024`). The developer will show you this during setup.
-   - **Cover Image URL** — Paste the URL of the main photo for this entry (see "Uploading Images to Cloudinary" below for how to copy this)
-   - **Published** — Check this box to make it live on the website
-4. **Write the event description in the page body below the properties.** You can write in Arabic, English, or both — describe the event, share reflections, etc. Use the same formatting options as sermon summaries (headings, bold, lists, quotes).
-5. **To add images inline within the description:** Type `/image` > select **"Embed link"** > paste a Cloudinary URL. This is great for highlighting specific moments within the text.
+   - **Title** — Name of the sermon (e.g., "The Importance of Patience")
+   - **Slug** — URL-friendly identifier (e.g., `importance-of-patience`)
+   - **Description** — Short summary for the listing card (1-2 sentences)
+   - **YouTube Link** — Paste the full YouTube URL if there's a video recording (optional)
+   - **Date** — Select the date the sermon was delivered
+   - **Status** — Set to `Published` when ready to go live
+4. **Write the sermon content in the page body** (Arabic, English, or both)
+5. The website will automatically show the new sermon once `Status` is `Published`
 
-> **Note:** The "Cloudinary Folder" pulls ALL photos into the gallery grid automatically. Inline images in the page body are for photos you want placed at specific points within your written description.
+**To hide a sermon from the website:**
+- Change the **"Status"** to `Draft`
 
-**To edit an existing gallery entry:**
-- Click the entry in Notion and update the properties or page body
-- To add more photos to the gallery grid, upload them to the same Cloudinary folder
-- To change the cover photo, update the Cover Image URL
-- To add/remove inline images, edit the page body
+---
+
+### Managing Gallery Photos
+
+The Gallery section displays individual photos organized by category. Each entry in the Gallery database represents one photo.
+
+**To add a new photo:**
+1. First, upload the image to Cloudinary (see "Uploading Images to Cloudinary" below)
+2. Copy the image URL from Cloudinary
+3. Open Notion and go to the **"Gallery"** database
+4. Click **"+ New"** to create a new entry
+5. Fill in the properties:
+   - **Caption** — A short description of the photo
+   - **Image URL** — Paste the Cloudinary URL of the photo
+   - **Category** — Select one: Events, Conferences, Community, Scholars, Programs, or Flyers
+   - **Order** — A number that controls display order (lower numbers appear first)
+   - **Featured** — Check this to highlight the photo
+   - **Status** — Set to `Active` to show on the website
+6. The photo will appear in the gallery, filterable by category
+
+**To hide a photo from the gallery:**
+- Change the **"Status"** to `Inactive`
+
+---
+
+### Managing Recitations
+
+The Media page displays Qur'anic recitation videos. Each entry is one YouTube video.
+
+**To add a new recitation:**
+1. Open Notion and go to the **"Recitations"** database
+2. Click **"+ New"** to create a new entry
+3. Fill in the properties:
+   - **Title** — Name of the recitation (e.g., "Surah Al-Mulk")
+   - **YouTube Link** — Paste the full YouTube video URL
+   - **Order** — A number that controls display order (lower numbers appear first)
+4. The recitation will appear on the Media page
+
+**To remove a recitation:**
+- Simply delete the row from the database
+
+---
+
+### Updating Site Settings (Live Stream, Profile Image, Logo)
+
+The Site Settings database contains key-value pairs that control parts of the website. You update these by editing the **"Value"** field of the relevant row.
+
+| Setting             | What It Controls                                          |
+|---------------------|-----------------------------------------------------------|
+| `live_stream_url`   | YouTube link shown on the homepage and Media page         |
+| `live_stream_title` | Title displayed above the live stream (e.g., "Friday Khutbah - Week of Feb 14") |
+| `profile_img`       | Your profile photo shown on the About page                |
+| `logo`              | The logo displayed in the website header                  |
+
+**To update the weekly live stream:**
+1. Open Notion > **Site Settings** database
+2. Find the `live_stream_url` row
+3. Replace the **"Value"** with the new YouTube link
+4. Update `live_stream_title` with the new title
+
+**To update your profile photo or logo:**
+1. Upload the new image to Cloudinary
+2. Copy the Cloudinary URL
+3. Open Notion > **Site Settings** database
+4. Find the `profile_img` or `logo` row
+5. Replace the **"Value"** with the new Cloudinary URL
 
 ---
 
@@ -231,96 +291,72 @@ The Gallery section combines **Notion** (for titles and descriptions) with **Clo
 **To upload photos:**
 1. Log in to Cloudinary at [https://console.cloudinary.com](https://console.cloudinary.com)
 2. Click **"Media Library"** in the left sidebar
-3. Navigate to the correct folder (see folder structure below)
-4. Click the **"Upload"** button (top-right)
-5. Drag and drop your photos, or click to browse your computer
-6. Click **"Upload"** to confirm
+3. Click the **"Upload"** button (top-right)
+4. Drag and drop your photos, or click to browse your computer
+5. Click **"Upload"** to confirm
 
-**To get an image URL (for the Cover Image in Notion):**
+**To get an image URL (for pasting into Notion):**
 1. In the Media Library, click on any image
 2. Click the **link/chain icon** or look for **"Copy URL"**
-3. Paste this URL into the **"Cover Image URL"** field in Notion
+3. Paste this URL into the relevant Notion property or page body
 
 **Tips for photos:**
 - Use clear, well-lit photos
-- Landscape orientation (horizontal) works best for galleries
+- Landscape orientation (horizontal) works best for galleries and cover images
 - Photos are automatically optimized — no need to resize before uploading
 - Give photos descriptive names before uploading (e.g., `eid-prayer-hall.jpg` instead of `IMG_4523.jpg`)
 
----
-
-## Cloudinary Folder Structure
-
-Your Cloudinary account is organized into folders. Always upload images to the correct folder so they appear in the right place on the website.
-
-```
-masjid-website/
-|
-+-- banners/                    <-- Homepage hero images and site-wide banners
-|
-+-- gallery/
-|   +-- events/                 <-- All event photo albums go here
-|   |   +-- eid-ul-fitr-2024/      (create a new folder for each event)
-|   |   +-- eid-ul-adha-2024/
-|   |   +-- ramadan-iftar-2024/
-|   |   +-- annual-fundraiser-2024/
-|   |
-|   +-- community/              <-- General community life photos
-|   |
-|   +-- facilities/             <-- Masjid building, prayer hall, classrooms
-|
-+-- team/                       <-- Imam, board members, staff photos
-|
-+-- logos/                      <-- Masjid logo files
-```
-
-**How to create a new event folder:**
-1. Go to **Media Library** > **masjid-website** > **gallery** > **events**
-2. Click **"New Folder"** (top-right)
-3. Name it using this format: `event-name-year` (e.g., `eid-ul-fitr-2025`)
-   - Use lowercase letters
-   - Use hyphens instead of spaces
-   - Include the year
-4. Upload all photos for that event into the new folder
+**Important:** When adding images inside a Notion page body (writings or sermons), always use **"Embed link"** and paste a **Cloudinary URL**. Never use Notion's "Upload" option — uploaded images break after 1 hour.
 
 ---
 
 ## Quick Reference Cheat Sheet
 
+### "I want to add a new article/writing"
+1. Open Notion > Articles database
+2. Click "+ New"
+3. Fill in Title, Slug, Description, Language, Category
+4. Paste a Cloudinary URL in "Cover Image" (optional)
+5. Write the content in the page body (Arabic, English, or both)
+6. Set Status to "Published"
+
 ### "I want to add a new sermon summary"
 1. Open Notion > Sermon Summaries database
 2. Click "+ New"
-3. Fill in Title, Date, Speaker, Tags at the top
-4. Write the sermon content in the page body (Arabic, English, or both)
-5. Check "Published"
+3. Fill in Title, Slug, Description, Date
+4. Paste a YouTube link in "YouTube Link" (optional)
+5. Write the sermon content in the page body
+6. Set Status to "Published"
 
-### "I want to add a photo inside a sermon or event description"
-1. Upload the image to Cloudinary first (Media Library > correct folder)
-2. Copy the image URL from Cloudinary
+### "I want to add a photo to the gallery"
+1. Upload the photo to Cloudinary
+2. Copy the image URL
+3. Open Notion > Gallery database
+4. Click "+ New"
+5. Fill in Caption, paste the URL in "Image URL", select a Category
+6. Set Status to "Active"
+
+### "I want to add a Qur'anic recitation video"
+1. Open Notion > Recitations database
+2. Click "+ New"
+3. Fill in Title, paste the YouTube link, set the Order number
+
+### "I want to add a photo inside an article or sermon"
+1. Upload the image to Cloudinary first
+2. Copy the image URL
 3. In your Notion page, click where the image should go
 4. Type `/image` > select **"Embed link"** > paste the URL
 5. **Never use "Upload"** — uploaded images break after 1 hour
 
-### "I want to add photos from an event"
-1. Open Cloudinary > Media Library > masjid-website > gallery > events
-2. Create a new folder (e.g., `eid-ul-fitr-2025`)
-3. Upload all photos into that folder
-4. Copy the URL of your favorite photo (for the cover)
-5. Open Notion > Gallery & Engagements database
-6. Click "+ New"
-7. Fill in Title, Date, Category
-8. Paste the folder path in "Cloudinary Folder" (e.g., `gallery/events/eid-ul-fitr-2025`)
-9. Paste the cover image URL in "Cover Image URL"
-10. Write a description in the page body (Arabic, English, or both)
-11. Check "Published"
-
-### "I want to update the homepage banner"
-1. Open Cloudinary > Media Library > masjid-website > banners
-2. Upload the new banner image (or replace the existing one)
+### "I want to update the live stream"
+1. Open Notion > Site Settings database
+2. Update `live_stream_url` with the new YouTube link
+3. Update `live_stream_title` with the new title
 
 ### "I want to hide something from the website"
-1. Open the entry in Notion
-2. Uncheck the "Published" checkbox
+- **Articles/Sermons:** Change Status to `Draft`
+- **Gallery photos:** Change Status to `Inactive`
+- **Recitations:** Delete the row
 
 ### Need help?
 Contact your developer at: `usmansagemode@gmail.com`

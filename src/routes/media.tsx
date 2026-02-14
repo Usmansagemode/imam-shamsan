@@ -42,12 +42,46 @@ function getYouTubeEmbedUrl(url: string): string | null {
   return null
 }
 
+function getStreamStatus(dateStr: string | undefined): { isLive: boolean; timeAgo: string | null } {
+  if (!dateStr) return { isLive: false, timeAgo: null }
+
+  const streamDate = new Date(dateStr)
+  if (isNaN(streamDate.getTime())) return { isLive: false, timeAgo: null }
+
+  const now = new Date()
+  const diffMs = now.getTime() - streamDate.getTime()
+  if (diffMs < 0) return { isLive: false, timeAgo: null }
+
+  const fourHours = 4 * 60 * 60 * 1000
+  if (diffMs < fourHours) {
+    return { isLive: true, timeAgo: null }
+  }
+
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffWeeks = Math.floor(diffDays / 7)
+
+  let timeAgo: string
+  if (diffHours < 24) {
+    timeAgo = `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+  } else if (diffDays < 7) {
+    timeAgo = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+  } else if (diffWeeks < 5) {
+    timeAgo = `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`
+  } else {
+    timeAgo = streamDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  return { isLive: false, timeAgo }
+}
+
 function MediaPage() {
   const { settings, recitations } = Route.useLoaderData()
 
   const liveStreamUrl = settings.live_stream_url?.value
   const liveStreamTitle = settings.live_stream_title?.value || 'Weekly Live Stream'
   const embedUrl = liveStreamUrl ? getYouTubeEmbedUrl(liveStreamUrl) : null
+  const { isLive, timeAgo } = getStreamStatus(settings.live_stream_url?.updatedAt)
 
   return (
     <>
@@ -74,6 +108,20 @@ function MediaPage() {
                 <h2 className="text-2xl font-bold text-foreground">
                   Live Stream
                 </h2>
+                {embedUrl && isLive && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-500">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                      <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+                    </span>
+                    LIVE
+                  </span>
+                )}
+                {embedUrl && !isLive && timeAgo && (
+                  <span className="text-sm text-muted-foreground">
+                    {timeAgo}
+                  </span>
+                )}
               </div>
               {embedUrl ? (
                 <div className="mx-auto max-w-3xl">

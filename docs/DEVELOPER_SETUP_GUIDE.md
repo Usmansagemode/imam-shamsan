@@ -1,21 +1,68 @@
-# Developer Setup Guide — Notion CMS & Cloudinary
+# Developer Setup Guide — Imam Shamsan Website
 
-This guide covers how to set up the 6 Notion databases and Cloudinary as the content management layer for the Imam Shamsan portfolio website. The website pulls content from Notion (text, metadata) and Cloudinary (images) at runtime via API.
+This guide covers how to set up the project locally, configure the 6 Notion databases and Cloudinary, and deploy to Vercel.
 
 ---
 
 ## Table of Contents
 
-1. [Notion Workspace Setup](#1-notion-workspace-setup)
-2. [Notion Database Schemas](#2-notion-database-schemas)
-3. [Cloudinary Setup](#3-cloudinary-setup)
-4. [Environment Variables](#4-environment-variables)
-5. [Block-Level Content (Mixed Arabic/English)](#5-block-level-content-mixed-arabicenglish)
-6. [Data Flow](#6-data-flow)
+1. [Local Development Setup](#1-local-development-setup)
+2. [Notion Workspace Setup](#2-notion-workspace-setup)
+3. [Notion Database Schemas](#3-notion-database-schemas)
+4. [Cloudinary Setup](#4-cloudinary-setup)
+5. [Environment Variables](#5-environment-variables)
+6. [Route & Page Structure](#6-route--page-structure)
+7. [Block-Level Content (Mixed Arabic/English)](#7-block-level-content-mixed-arabicenglish)
+8. [Data Flow](#8-data-flow)
+9. [Deployment (Vercel)](#9-deployment-vercel)
+10. [External Accounts & Social Links](#10-external-accounts--social-links)
 
 ---
 
-## 1. Notion Workspace Setup
+## 1. Local Development Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm (comes with Node.js)
+
+### Install & Run
+
+```bash
+git clone <repo-url>
+cd imam-shamsan
+npm install
+cp .env.example .env.local   # then fill in the values
+npm run dev                   # starts dev server on port 3005
+```
+
+### Available Scripts
+
+| Script         | Purpose                            |
+|----------------|------------------------------------|
+| `npm run dev`  | Start dev server (port 3005)       |
+| `npm run build`| Production build                   |
+| `npm run preview` | Preview production build locally |
+| `npm run test` | Run tests (Vitest)                 |
+| `npm run lint` | Run ESLint                         |
+| `npm run check`| Format + lint fix                  |
+
+### Tech Stack
+
+- **Framework:** TanStack Start (React SSR) + TanStack Router (file-based, type-safe routing)
+- **Language:** TypeScript (strict)
+- **Styling:** Tailwind CSS v4 + shadcn/ui (Base Nova theme)
+- **CMS:** Notion API (direct fetch, SDK types only) + Cloudinary (URL transformations)
+- **Email:** Resend API (contact form)
+- **Lightbox:** yet-another-react-lightbox (gallery)
+- **Icons:** Lucide React
+- **Deployment:** Vercel
+
+> **Note on Notion SDK:** The project imports types from `@notionhq/client` for TypeScript, but makes direct `fetch()` calls to the Notion API rather than using the SDK client. This avoids bundling the full SDK.
+
+---
+
+## 2. Notion Workspace Setup
 
 ### Create the Integration
 
@@ -43,7 +90,7 @@ Copy the DATABASE_ID portion for your `.env` file.
 
 ---
 
-## 2. Notion Database Schemas
+## 3. Notion Database Schemas
 
 Create each database as a **full-page database** in Notion. Property names must match **exactly** — the code queries by these names.
 
@@ -51,7 +98,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 
 ### Database 1: Articles
 
-> The primary CMS for blog posts/writings. Body content lives in the **Notion page body** (block content), not in properties.
+> The primary CMS for blog posts/writings. Body content lives in the **Notion page body** (block content), not in properties. Displayed on the `/writings` page.
 
 | Property Name     | Type             | Purpose                                              |
 |-------------------|------------------|------------------------------------------------------|
@@ -72,8 +119,10 @@ Create each database as a **full-page database** in Notion. Property names must 
 **How the code uses it:**
 - Filters by `Status = Published`
 - Sorts by `Created time` descending
-- For article detail pages, fetches all child blocks for the full body
+- For article detail pages (`/writings/$slug`), fetches all child blocks for the full body
 - `Language` determines RTL rendering (`Arabic` → `dir="rtl"` + Scheherazade New font)
+- `Featured` articles are shown on the homepage via `getFeaturedArticles`
+- Client-side filtering by `Language` and `Category` on the `/writings` page
 
 **Env variable:** `NOTION_ARTICLES_DATABASE_ID`
 
@@ -81,7 +130,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 
 ### Database 2: Services
 
-> Booking cards with pricing. No page body content needed — everything is in properties.
+> Booking cards with pricing. No page body content needed — everything is in properties. Displayed on the `/services` page and previewed on the homepage.
 
 | Property Name   | Type        | Purpose                                             |
 |-----------------|-------------|-----------------------------------------------------|
@@ -98,6 +147,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 - Filters by `Status = Active`
 - Sorts by `Order` ascending
 - Each card links to `/contact?service={slug}` (pre-fills the contact form)
+- Services are also loaded on the `/contact` page for the dropdown
 
 **Env variable:** `NOTION_SERVICES_DATABASE_ID`
 
@@ -105,7 +155,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 
 ### Database 3: Sermon Summaries
 
-> Written summaries of Friday khutbahs. Body content lives in the **Notion page body**.
+> Written summaries of Friday khutbahs. Body content lives in the **Notion page body**. Displayed on the `/sermons` page.
 
 | Property Name   | Type         | Purpose                                       |
 |-----------------|--------------|-----------------------------------------------|
@@ -122,7 +172,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 **How the code uses it:**
 - Filters by `Status = Published`
 - Sorts by `Date` descending
-- For detail pages, embeds the YouTube video + renders the written summary from page blocks
+- For detail pages (`/sermons/$slug`), embeds the YouTube video + renders the written summary from page blocks
 
 **Env variable:** `NOTION_SERMONS_DATABASE_ID`
 
@@ -130,7 +180,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 
 ### Database 4: Gallery
 
-> Individual photos for the gallery page. No page body content — one entry per image.
+> Individual photos for the gallery page. No page body content — one entry per image. Displayed on the `/gallery` page.
 
 | Property Name | Type       | Purpose                                              |
 |---------------|------------|------------------------------------------------------|
@@ -144,8 +194,8 @@ Create each database as a **full-page database** in Notion. Property names must 
 **How the code uses it:**
 - Filters by `Status = Active`
 - Sorts by `Order` ascending
-- Frontend filters by `Category`
-- Clicking opens a full-screen lightbox
+- Client-side filtering by `Category`
+- Clicking opens a full-screen lightbox (yet-another-react-lightbox)
 
 **Env variable:** `NOTION_GALLERY_DATABASE_ID`
 
@@ -153,7 +203,7 @@ Create each database as a **full-page database** in Notion. Property names must 
 
 ### Database 5: Recitations
 
-> Qur'anic recitation videos displayed on the Media page. Each entry is one YouTube video. To remove a recitation, simply delete the row.
+> Qur'anic recitation videos displayed on the `/media` page. Each entry is one YouTube video. To remove a recitation, simply delete the row.
 
 | Property Name | Type   | Purpose                                    |
 |---------------|--------|--------------------------------------------|
@@ -162,9 +212,9 @@ Create each database as a **full-page database** in Notion. Property names must 
 | Order         | Number | Display order (lower numbers first)         |
 
 **How the code uses it:**
-- Fetches all entries
+- Fetches all entries (no status filter)
 - Sorts by `Order` ascending
-- Embeds each video on the Media page in a 2-column grid
+- Embeds each video on the Media page in a 3-column grid
 
 **Env variable:** `NOTION_RECITATIONS_DATABASE_ID`
 
@@ -189,20 +239,21 @@ Create each database as a **full-page database** in Notion. Property names must 
 | profile_img        | `https://res.cloudinary.com/.../profile.jpg`       |
 | logo               | `https://res.cloudinary.com/.../logo.jpg`          |
 
-The imam updates these weekly. The homepage uses the `Last edited time` of the `live_stream_url` row to show live status:
-- **Updated today** → pulsing red "LIVE" badge appears
-- **Updated in the past** → shows "2 days ago" / "1 week ago"
-- **No URL set** → falls back to generic "Media" heading
+**How the code uses it:**
+- Settings are loaded in the root layout (`__root.tsx`) and passed to Header (logo) and child routes
+- The homepage (`index.tsx`) passes settings to `HeroSection` and `MediaHighlight`
+- The about page uses `profile_img`
+- The media page uses `live_stream_url` and `live_stream_title`
 
 **Env variable:** `NOTION_SETTINGS_DATABASE_ID`
 
 ---
 
-## 3. Cloudinary Setup
+## 4. Cloudinary Setup
 
 ### What Cloudinary Does
 
-Cloudinary hosts all images permanently. The code transforms Cloudinary URLs on-the-fly for optimization (resizing, format conversion, quality) — no Cloudinary API key or SDK is needed.
+Cloudinary hosts all images permanently. The `CloudinaryImage` component transforms Cloudinary URLs on-the-fly for optimization (resizing, format conversion, quality) using URL transformations — no Cloudinary API key or SDK is needed at runtime.
 
 ### Account Setup
 
@@ -227,9 +278,9 @@ No folder structure is required. The code works with any valid Cloudinary URL re
 
 ---
 
-## 4. Environment Variables
+## 5. Environment Variables
 
-Add these to `.env` locally or in Vercel project settings:
+Add these to `.env.local` locally or in Vercel project settings:
 
 ```env
 # Site
@@ -260,7 +311,64 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
 
 ---
 
-## 5. Block-Level Content (Mixed Arabic/English)
+## 6. Route & Page Structure
+
+The site uses TanStack Router's file-based routing. All routes are in `src/routes/`.
+
+| Route                  | Page             | Data Source                        | Key Features                                      |
+|------------------------|------------------|------------------------------------|---------------------------------------------------|
+| `/`                    | Homepage         | Services, Latest Articles, Settings | Hero, services preview, latest writings, media highlight, contact CTA |
+| `/about`               | About            | Settings (profile image)            | Hardcoded bio, education, specializations         |
+| `/writings`            | Writings list    | Articles                           | Language + category client-side filtering          |
+| `/writings/$slug`      | Article detail   | Article + page blocks              | Full body rendered from Notion blocks, RTL support |
+| `/sermons`             | Sermons list     | Sermon Summaries                   | Grid of sermon cards                               |
+| `/sermons/$slug`       | Sermon detail    | Sermon + page blocks               | YouTube embed + written summary                    |
+| `/services`            | Services         | Services                           | Service cards with pricing                         |
+| `/gallery`             | Gallery          | Gallery                            | Category filter, lightbox on click                 |
+| `/media`               | Media            | Recitations, Settings              | Live stream embed, recitation grid, YouTube channel link |
+| `/contact`             | Contact          | Services                           | Contact form (Resend email), service pre-selection via `?service=` |
+
+### Key Components
+
+| Component                          | Purpose                                       |
+|------------------------------------|-----------------------------------------------|
+| `layout/Header.tsx`                | Navigation + logo (from settings) + theme toggle |
+| `layout/Footer.tsx`                | Footer with links and social icons             |
+| `layout/Container.tsx`             | Max-width wrapper                              |
+| `layout/ThemeToggle.tsx`           | Dark/light mode toggle (localStorage)          |
+| `home/HeroSection.tsx`             | Homepage hero with live stream indicator        |
+| `home/ServicesPreview.tsx`         | Homepage services preview                      |
+| `home/LatestWritings.tsx`          | Homepage latest articles                       |
+| `home/MediaHighlight.tsx`          | Homepage media/live stream section              |
+| `articles/ArticleCard.tsx`         | Article listing card                           |
+| `articles/ArticleGrid.tsx`         | Grid layout for articles                       |
+| `articles/ArticleContent.tsx`      | Renders Notion blocks as HTML                  |
+| `articles/LanguageFilter.tsx`      | Language + category filter controls             |
+| `sermons/SermonCard.tsx`           | Sermon listing card                            |
+| `sermons/SermonContent.tsx`        | Renders sermon page blocks                     |
+| `services/ServiceCard.tsx`         | Service card with pricing                      |
+| `services/ServiceGrid.tsx`         | Grid layout for services                       |
+| `gallery/GalleryGrid.tsx`          | Masonry-style gallery grid                     |
+| `gallery/GalleryLightbox.tsx`      | Full-screen image lightbox                     |
+| `contact/ContactForm.tsx`          | Contact form with service dropdown             |
+| `shared/CloudinaryImage.tsx`       | Image component with Cloudinary URL transforms |
+| `shared/ArabicText.tsx`            | Wrapper for Arabic text (RTL + font)           |
+| `shared/TagList.tsx`               | Tag badge list                                 |
+
+### Key Library Files
+
+| File                    | Purpose                                           |
+|-------------------------|---------------------------------------------------|
+| `lib/notion.ts`         | All Notion API queries + server functions          |
+| `lib/parsers.ts`        | Notion block → `ContentBlock` parser               |
+| `lib/cloudinary.ts`     | Cloudinary URL transformation helpers              |
+| `lib/email.ts`          | Resend API integration for contact form            |
+| `lib/seo.ts`            | SEO meta tags, Open Graph, JSON-LD schemas         |
+| `lib/utils.ts`          | Utility functions (cn, etc.)                       |
+
+---
+
+## 7. Block-Level Content (Mixed Arabic/English)
 
 All sermon summaries and articles may contain **mixed Arabic and English** text within the same page.
 
@@ -302,7 +410,7 @@ If the imam drags an image directly into Notion (upload), Notion stores it with 
 
 ---
 
-## 6. Data Flow
+## 8. Data Flow
 
 ```
 Imam uploads images to Cloudinary → copies URL
@@ -327,3 +435,63 @@ Arabic content rendered with Scheherazade New font + RTL direction
 The imam manages content through two interfaces:
 - **Notion** — all text content, metadata, publish controls, inline image embeds
 - **Cloudinary** — uploading photos, then pasting URLs into Notion
+
+---
+
+## 9. Deployment (Vercel)
+
+### GitHub Repository Setup
+
+The repository should be hosted under a **GitHub Organization** so both the developer and the client have access. This allows the client to connect the repo to their own Vercel account for automatic deployments.
+
+**Steps:**
+1. Create a GitHub Organization (free tier)
+2. Transfer or create the repo under the org
+3. Add both developer and client as org members
+4. The client connects the org repo to their Vercel account
+
+> **Why an org?** Vercel requires admin-level access to install its GitHub webhook for automatic deployments. A collaborator on a personal repo cannot do this. A GitHub Organization gives both parties the access needed.
+
+### Vercel Project Settings
+
+1. **Framework Preset:** Other (TanStack Start uses Nitro/Vinxi under the hood)
+2. **Build Command:** `npm run build`
+3. **Output Directory:** `.output` (auto-detected)
+4. **Node.js Version:** 18.x or 20.x
+5. **Environment Variables:** Add all variables from Section 5 for Production, Preview, and Development
+
+### Custom Domain
+
+1. In Vercel: **Settings** > **Domains** > Add `imamshamsan.com` (or the chosen domain)
+2. In Namecheap: Update DNS to point to Vercel's nameservers (Vercel provides these)
+3. Vercel will auto-provision an SSL certificate
+
+### Resend Domain Verification
+
+For the contact form email to work in production:
+1. Go to [https://resend.com/domains](https://resend.com/domains)
+2. Add the production domain (e.g., `imamshamsan.com`)
+3. Add the DNS records Resend provides to Namecheap
+4. Once verified, update the `from` address in `src/lib/email.ts` from `onboarding@resend.dev` to your verified domain
+
+---
+
+## 10. External Accounts & Social Links
+
+These external links are hardcoded in the site (primarily in the contact page and media page):
+
+| Platform   | URL                                                          | Used In          |
+|------------|--------------------------------------------------------------|------------------|
+| YouTube    | `https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg`  | Media page, Contact page, Footer |
+| Facebook   | `https://www.facebook.com/shamsan.aljabi.2025`               | Contact page, Footer |
+| Instagram  | `https://www.instagram.com/dr.sham_san/`                     | Contact page, Footer |
+
+**Contact email:** `MCCGPImamShamsan@gmail.com` (configured via `CONTACT_EMAIL` env var)
+
+### SEO & Structured Data
+
+The site includes:
+- **Open Graph + Twitter Card** meta tags on every page (`src/lib/seo.ts`)
+- **JSON-LD schemas:** Person schema (homepage, about), Article schema (article detail), BreadcrumbList schema (all pages)
+- **Canonical URLs** on every page
+- **Dark mode** support with `localStorage` persistence and flash-prevention script in `<head>`

@@ -6,7 +6,7 @@
 
 body {
   @apply m-0;
-  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+  font-family: 'Montserrat', 'Scheherazade New', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -18,9 +18,35 @@ code {
     monospace;
 }
 
-/* Arabic text uses Scheherazade New */
+/* Arabic text — larger size + more line height for readability */
 .font-arabic {
   font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 1.1em;
+  line-height: 2;
+}
+
+.font-arabic-h1 {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 2em;
+  line-height: 2;
+}
+
+.font-arabic-h2 {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 1.75em;
+  line-height: 2;
+}
+
+.font-arabic-h3 {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 1.5em;
+  line-height: 2;
+}
+
+.font-arabic-h4 {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 1.25em;
+  line-height: 2;
 }
 
 /* RTL support for Arabic content */

@@ -11,7 +11,7 @@ interface ContactFormData {
 
 async function sendContactEmail(data: ContactFormData): Promise<{ success: boolean; error?: string }> {
   const resendApiKey = process.env.RESEND_API_KEY
-  const contactEmail = process.env.CONTACT_EMAIL || 'MCCGPImamShamsan@gmail.com'
+  const contactEmail = process.env.CONTACT_EMAIL || 'mccgpimamshamsan@gmail.com'
 
   if (!resendApiKey) {
     console.error('RESEND_API_KEY not configured')

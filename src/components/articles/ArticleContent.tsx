@@ -2,6 +2,19 @@ import { cn } from '@/lib/utils'
 import { CloudinaryImage } from '@/components/shared/CloudinaryImage'
 import type { ContentBlock, RichTextItem } from '@/types/article'
 
+/** Check if a string contains Arabic characters (Unicode range 0600-06FF + extended) */
+function containsArabic(text: string): boolean {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)
+}
+
+/** Get the full plain text from a block (including rich text items) */
+function getBlockText(block: ContentBlock): string {
+  if (block.richText && block.richText.length > 0) {
+    return block.richText.map((item) => item.text).join('')
+  }
+  return block.content || ''
+}
+
 function renderRichText(items: RichTextItem[]): React.ReactNode[] {
   return items.map((item, i) => {
     let node: React.ReactNode = item.text
@@ -41,13 +54,27 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       ? renderRichText(block.richText)
       : block.content
 
+  const blockText = getBlockText(block)
+  const isArabicBlock = containsArabic(blockText)
+  const arabicDir = isArabicBlock ? 'rtl' : undefined
+
+  let arabicClass = ''
+  if (isArabicBlock) {
+    switch (block.type) {
+      case 'heading_1': arabicClass = 'font-arabic-h2'; break
+      case 'heading_2': arabicClass = 'font-arabic-h3'; break
+      case 'heading_3': arabicClass = 'font-arabic-h4'; break
+      default: arabicClass = 'font-arabic'
+    }
+  }
+
   switch (block.type) {
     case 'paragraph':
       if (!block.content && (!block.richText || block.richText.length === 0)) {
         return <div key={block.id} className="h-4" />
       }
       return (
-        <p key={block.id} className="leading-relaxed">
+        <p key={block.id} className={cn('leading-relaxed', arabicClass)} dir={arabicDir}>
           {richContent}
         </p>
       )
@@ -56,7 +83,8 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       return (
         <h1
           key={block.id}
-          className="text-3xl font-bold tracking-tight mt-8 mb-4"
+          className={cn('text-3xl font-bold tracking-tight mt-8 mb-4', arabicClass)}
+          dir={arabicDir}
         >
           {richContent}
         </h1>
@@ -66,7 +94,8 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       return (
         <h2
           key={block.id}
-          className="text-2xl font-bold tracking-tight mt-6 mb-3"
+          className={cn('text-2xl font-bold tracking-tight mt-6 mb-3', arabicClass)}
+          dir={arabicDir}
         >
           {richContent}
         </h2>
@@ -76,7 +105,8 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       return (
         <h3
           key={block.id}
-          className="text-xl font-semibold mt-4 mb-2"
+          className={cn('text-xl font-semibold mt-4 mb-2', arabicClass)}
+          dir={arabicDir}
         >
           {richContent}
         </h3>
@@ -84,14 +114,14 @@ function renderBlock(block: ContentBlock): React.ReactNode {
 
     case 'bulleted_list_item':
       return (
-        <li key={block.id} className="ml-6 list-disc">
+        <li key={block.id} className={cn('ml-6 list-disc', arabicClass)} dir={arabicDir}>
           {richContent}
         </li>
       )
 
     case 'numbered_list_item':
       return (
-        <li key={block.id} className="ml-6 list-decimal">
+        <li key={block.id} className={cn('ml-6 list-decimal', arabicClass)} dir={arabicDir}>
           {richContent}
         </li>
       )
@@ -100,7 +130,8 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       return (
         <blockquote
           key={block.id}
-          className="border-l-4 border-primary/50 pl-4 italic text-muted-foreground my-4"
+          className={cn('border-l-4 border-primary/50 pl-4 italic text-muted-foreground my-4', arabicClass)}
+          dir={arabicDir}
         >
           {richContent}
         </blockquote>
@@ -110,7 +141,8 @@ function renderBlock(block: ContentBlock): React.ReactNode {
       return (
         <div
           key={block.id}
-          className="my-4 flex gap-3 rounded-lg bg-accent/50 p-4"
+          className={cn('my-4 flex gap-3 rounded-lg bg-accent/50 p-4', arabicClass)}
+          dir={arabicDir}
         >
           {block.icon && <span className="text-xl">{block.icon}</span>}
           <div className="flex-1">{richContent}</div>
@@ -180,7 +212,7 @@ function renderBlock(block: ContentBlock): React.ReactNode {
     default:
       if (block.content) {
         return (
-          <p key={block.id} className="leading-relaxed">
+          <p key={block.id} className={cn('leading-relaxed', arabicClass)} dir={arabicDir}>
             {richContent}
           </p>
         )

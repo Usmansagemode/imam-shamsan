@@ -5,7 +5,7 @@ export interface SermonSummary {
   title: string
   slug: string
   description: string
-  youtubeLink: string
+  youtubeLink?: string
   date: string
   createdAt: string
 }

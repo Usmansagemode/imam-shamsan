@@ -43,7 +43,7 @@ function HomePage() {
 
   return (
     <>
-      <HeroSection />
+      <HeroSection settings={settings} />
       <ServicesPreview services={services} />
       <LatestWritings articles={latestArticles} />
       <MediaHighlight settings={settings} />

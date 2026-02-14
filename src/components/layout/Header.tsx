@@ -1,22 +1,22 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
-  Menu,
-  X,
-  Home,
   BookOpen,
-  Users,
+  FileText,
+  Home,
   Image,
   Mail,
-  Moon,
-  Sun,
+  Menu,
   Mic,
+  Moon,
   Play,
-  FileText,
+  Sun,
+  Users,
+  X,
 } from 'lucide-react'
 import { Container } from './Container'
-import { Button } from '@/components/ui/button'
 import { ThemeToggle } from './ThemeToggle'
+import { Button } from '@/components/ui/button'
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -106,17 +106,39 @@ function MobileMenu() {
   )
 }
 
-export function Header() {
+interface HeaderProps {
+  logoUrl?: string
+}
+
+export function Header({ logoUrl }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <Container>
         <div className="flex h-16 items-center justify-between gap-4">
           <Link
             to="/"
-            className="flex items-center gap-2 text-xl font-semibold text-primary hover:text-primary/90 transition-colors shrink-0"
+            className={`flex items-center ${logoUrl ? '' : 'gap-2'} text-xl font-semibold text-primary hover:text-primary/90 transition-colors shrink-0`}
           >
-            <span className="font-bold">IMAM</span>
-            <span className="font-normal text-secondary">SHAMSAN</span>
+            {logoUrl ? (
+              <>
+                <img
+                  src={logoUrl}
+                  alt="Imam Shamsan"
+                  className="h-18 w-auto object-cover object-center"
+                />
+                <span>
+                  <span className="text-sm font-bold mr-1">IMAM</span>
+                  <span className="text-sm font-normal text-secondary">
+                    SHAMSAN
+                  </span>
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-bold">IMAM</span>
+                <span className="font-normal text-secondary">SHAMSAN</span>
+              </>
+            )}
           </Link>
 
           <nav className="flex items-center gap-1">

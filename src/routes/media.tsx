@@ -1,14 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Youtube, Radio, BookOpen } from 'lucide-react'
+import { BookOpen, Radio, Youtube } from 'lucide-react'
 import { Container } from '@/components/layout/Container'
-import { Button } from '@/components/ui/button'
-import { getSiteSettings } from '@/lib/notion'
-import { getMediaMeta, getBreadcrumbSchema, siteConfig } from '@/lib/seo'
+import { getActiveRecitations, getSiteSettings } from '@/lib/notion'
+import { getBreadcrumbSchema, getMediaMeta, siteConfig } from '@/lib/seo'
 
 export const Route = createFileRoute('/media')({
   loader: async () => {
-    const settings = await getSiteSettings()
-    return { settings }
+    const [settings, recitations] = await Promise.all([
+      getSiteSettings(),
+      getActiveRecitations(),
+    ])
+    return { settings, recitations }
   },
   head: () => {
     const { meta, links } = getMediaMeta()
@@ -30,7 +32,7 @@ export const Route = createFileRoute('/media')({
 })
 
 function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url) return null
+  if (!url || typeof url !== 'string') return null
   const watchMatch = url.match(/[?&]v=([^&]+)/)
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`
   const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
@@ -41,10 +43,10 @@ function getYouTubeEmbedUrl(url: string): string | null {
 }
 
 function MediaPage() {
-  const { settings } = Route.useLoaderData()
+  const { settings, recitations } = Route.useLoaderData()
 
-  const liveStreamUrl = settings.live_stream_url
-  const liveStreamTitle = settings.live_stream_title || 'Weekly Live Stream'
+  const liveStreamUrl = settings.live_stream_url?.value
+  const liveStreamTitle = settings.live_stream_title?.value || 'Weekly Live Stream'
   const embedUrl = liveStreamUrl ? getYouTubeEmbedUrl(liveStreamUrl) : null
 
   return (
@@ -106,44 +108,57 @@ function MediaPage() {
                   Qur'anic Recitations
                 </h2>
               </div>
-              <div className="rounded-xl bg-muted/50 p-8 text-center">
-                <p className="text-muted-foreground">
-                  Recitations will be available soon. Stay tuned!
-                </p>
-              </div>
+              {recitations.length > 0 ? (
+                <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-3">
+                  {recitations.map((recitation) => {
+                    const recitationEmbed = getYouTubeEmbedUrl(
+                      recitation.youtubeLink,
+                    )
+                    if (!recitationEmbed) return null
+                    return (
+                      <div key={recitation.id}>
+                        <h3 className="mb-3 text-base font-semibold text-foreground">
+                          {recitation.title}
+                        </h3>
+                        <div className="aspect-video overflow-hidden rounded-xl ring-1 ring-foreground/10">
+                          <iframe
+                            src={recitationEmbed}
+                            title={recitation.title}
+                            className="h-full w-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl bg-muted/50 p-8 text-center">
+                  <p className="text-muted-foreground">
+                    Recitations will be available soon. Stay tuned!
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* YouTube Channel */}
-            <div>
-              <div className="mb-6 flex items-center gap-3">
-                <Youtube className="size-6 text-red-500" />
-                <h2 className="text-2xl font-bold text-foreground">
-                  YouTube Channel
-                </h2>
+            {/* YouTube Channel Banner */}
+            <a
+              href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between rounded-xl bg-card ring-1 ring-foreground/10 px-6 py-4 transition-colors hover:bg-accent/50"
+            >
+              <div className="flex items-center gap-3">
+                <Youtube className="size-5 text-red-500" />
+                <span className="text-sm font-medium text-foreground">
+                  Subscribe to our YouTube channel for all sermons & lectures
+                </span>
               </div>
-              <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-8 text-center">
-                <Youtube className="mx-auto size-16 text-red-500 mb-4" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Watch all sermons and lectures
-                </h3>
-                <p className="mt-2 text-muted-foreground">
-                  Subscribe to our YouTube channel for the latest khutbahs,
-                  lectures, and educational content.
-                </p>
-                <div className="mt-6">
-                  <a
-                    href="https://www.youtube.com/channel/UCHsyLCyXVM8L25qwS7h9Gjg"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button className="gap-2">
-                      <Youtube className="size-4" />
-                      Visit YouTube Channel
-                    </Button>
-                  </a>
-                </div>
-              </div>
-            </div>
+              <span className="text-sm font-medium text-primary">
+                Visit Channel &rarr;
+              </span>
+            </a>
           </div>
         </Container>
       </section>

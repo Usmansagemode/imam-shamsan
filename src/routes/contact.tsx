@@ -107,7 +107,7 @@ function ContactPage() {
                     YouTube
                   </a>
                   <a
-                    href="https://www.facebook.com/"
+                    href="https://www.facebook.com/shamsan.aljabi.2025"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -116,7 +116,7 @@ function ContactPage() {
                     Facebook
                   </a>
                   <a
-                    href="https://www.instagram.com/"
+                    href="https://www.instagram.com/dr.sham_san/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"

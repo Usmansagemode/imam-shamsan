@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { ArabicText } from '@/components/shared/ArabicText'
 import type { Service } from '@/types/service'
 
@@ -39,16 +40,24 @@ export function ServiceCard({ service }: ServiceCardProps) {
       )}
 
       <div className="mt-auto pt-3 border-t border-border">
-        {service.priceDisplay && (
-          <span className="text-sm font-semibold text-secondary">
-            {service.priceDisplay}
+        <div className="flex items-center justify-between gap-3">
+          <div className="max-w-[60%]">
+            {service.priceDisplay && (
+              <span className="text-sm font-semibold text-secondary">
+                {service.priceDisplay}
+              </span>
+            )}
+            {service.priceNote && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {service.priceNote}
+              </p>
+            )}
+          </div>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
+            Book Now
+            <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
           </span>
-        )}
-        {service.priceNote && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {service.priceNote}
-          </p>
-        )}
+        </div>
       </div>
     </Link>
   )

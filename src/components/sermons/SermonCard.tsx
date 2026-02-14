@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Calendar, Youtube } from 'lucide-react'
+import { Calendar, Play } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import type { SermonSummary } from '@/types/sermon'
 
@@ -7,36 +7,58 @@ interface SermonCardProps {
   sermon: SermonSummary
 }
 
+function getYouTubeThumbnail(url: string): string | null {
+  if (!url || typeof url !== 'string') return null
+  const watchMatch = url.match(/[?&]v=([^&]+)/)
+  if (watchMatch) return `https://img.youtube.com/vi/${watchMatch[1]}/mqdefault.jpg`
+  const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
+  if (shortMatch) return `https://img.youtube.com/vi/${shortMatch[1]}/mqdefault.jpg`
+  const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/)
+  if (liveMatch) return `https://img.youtube.com/vi/${liveMatch[1]}/mqdefault.jpg`
+  return null
+}
+
 export function SermonCard({ sermon }: SermonCardProps) {
+  const thumbnail = sermon.youtubeLink ? getYouTubeThumbnail(sermon.youtubeLink) : null
+
   return (
     <Link
       to="/sermons/$slug"
       params={{ slug: sermon.slug }}
-      className="group flex flex-col rounded-xl ring-1 ring-foreground/10 bg-card p-5 transition-all hover:ring-primary/30 hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-xl ring-1 ring-foreground/10 bg-card transition-all hover:ring-primary/30 hover:shadow-md"
     >
-      <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-        {sermon.title}
-      </h3>
-
-      {sermon.description && (
-        <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-          {sermon.description}
-        </p>
+      {thumbnail && (
+        <div className="relative aspect-video overflow-hidden bg-muted">
+          <img
+            src={thumbnail}
+            alt={sermon.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+            <Play className="size-10 text-white fill-white" />
+          </div>
+        </div>
       )}
 
-      <div className="mt-auto pt-3 flex items-center gap-4 text-xs text-muted-foreground">
-        {sermon.date && (
-          <span className="flex items-center gap-1">
-            <Calendar className="size-3" />
-            {formatDate(sermon.date)}
-          </span>
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+          {sermon.title}
+        </h3>
+
+        {sermon.description && (
+          <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+            {sermon.description}
+          </p>
         )}
-        {sermon.youtubeLink && (
-          <span className="flex items-center gap-1 text-red-500">
-            <Youtube className="size-3" />
-            Video
-          </span>
-        )}
+
+        <div className="mt-auto pt-3 flex items-center gap-4 text-xs text-muted-foreground">
+          {sermon.date && (
+            <span className="flex items-center gap-1">
+              <Calendar className="size-3" />
+              {formatDate(sermon.date)}
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   )

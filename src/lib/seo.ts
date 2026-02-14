@@ -3,7 +3,7 @@ import type { ArticleSummary, Article } from '@/types/article'
 export const siteConfig = {
   name: 'Imam Dr. Shamsan Al-Jabi',
   description:
-    'Official website of Imam Dr. Shamsan Al-Jabi - Islamic scholar, educator, and community leader. Explore articles, sermons, services, and more.',
+    'Official website of Imam Dr. Shamsan Al-Jabi - Islamic scholar, educator, and community leader. Explore writings, sermons, services, and more.',
   url: process.env.SITE_URL || 'https://imamshamsan.com',
   author: 'Imam Dr. Shamsan Al-Jabi',
   locale: 'en_US',
@@ -124,7 +124,7 @@ export function getWritingsListMeta(): HeadConfig {
   return getPageMeta({
     title: 'Writings',
     description:
-      'Articles and reflections by Imam Dr. Shamsan Al-Jabi on Islamic knowledge, Quran commentary, and spiritual guidance.',
+      'Writings and reflections by Imam Dr. Shamsan Al-Jabi on Islamic knowledge, Quran commentary, and spiritual guidance.',
     canonicalUrl: `${siteConfig.url}/writings`,
   })
 }

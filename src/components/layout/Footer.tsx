@@ -63,7 +63,7 @@ export function Footer() {
                 <Youtube className="size-5" />
               </a>
               <a
-                href="https://www.facebook.com/"
+                href="https://www.facebook.com/shamsan.aljabi.2025"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -72,7 +72,7 @@ export function Footer() {
                 <Facebook className="size-5" />
               </a>
               <a
-                href="https://www.instagram.com/"
+                href="https://www.instagram.com/dr.sham_san/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"

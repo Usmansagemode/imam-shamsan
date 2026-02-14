@@ -7,11 +7,16 @@ import {
 
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { getSiteSettings } from '@/lib/notion'
 import { getBaseMeta, siteConfig } from '@/lib/seo'
 
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
+  loader: async () => {
+    const settings = await getSiteSettings()
+    return { settings }
+  },
   head: () => ({
     meta: [
       ...getBaseMeta(),
@@ -56,21 +61,24 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { settings } = Route.useLoaderData()
+  const logoUrl = settings.logo?.value
+
   return (
-    <RootDocument>
+    <RootDocument logoUrl={logoUrl}>
       <Outlet />
     </RootDocument>
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({ children, logoUrl }: { children: React.ReactNode; logoUrl?: string }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body className="flex min-h-screen flex-col">
-        <Header />
+        <Header logoUrl={logoUrl} />
         <main className="flex-1">{children}</main>
         <Footer />
         <Scripts />

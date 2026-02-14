@@ -20,7 +20,7 @@ export function LatestWritings({ articles }: LatestWritingsProps) {
               Latest Writings
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Recent articles and reflections
+              Recent writings and reflections
             </p>
           </div>
           <Link

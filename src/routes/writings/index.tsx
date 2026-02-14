@@ -58,7 +58,7 @@ function WritingsPage() {
               <span className="text-primary">Writings</span>
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Articles, reflections, and Islamic insights by Imam Shamsan
+              Reflections and Islamic insights by Imam Shamsan
             </p>
           </div>
         </Container>

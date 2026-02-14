@@ -9,6 +9,7 @@ import type { ArticleSummary, Article, ContentBlock, RichTextItem } from '@/type
 import type { Service } from '@/types/service'
 import type { SermonSummary, Sermon } from '@/types/sermon'
 import type { GalleryImage } from '@/types/gallery'
+import type { Recitation } from '@/types/recitation'
 import type { SiteSettings } from '@/types/settings'
 import { parseBlocksToContent } from './parsers'
 
@@ -275,7 +276,7 @@ function pageToSermonSummary(page: PageObjectResponse): SermonSummary {
     title: (getPropertyValue(props['Title']) as string) || '',
     slug: (getPropertyValue(props['Slug']) as string) || '',
     description: (getPropertyValue(props['Description']) as string) || '',
-    youtubeLink: (getPropertyValue(props['YouTube Link']) as string) || '',
+    youtubeLink: (getPropertyValue(props['YouTube Link']) as string) || undefined,
     date: (getPropertyValue(props['Date']) as string) || '',
     createdAt: (getPropertyValue(props['Created time']) as string) || '',
   }
@@ -373,6 +374,36 @@ async function fetchActiveGalleryImages(category?: string): Promise<GalleryImage
   }
 }
 
+// ── Recitations ──────────────────────────────────────────
+
+function pageToRecitation(page: PageObjectResponse): Recitation {
+  const props = page.properties
+  return {
+    id: page.id,
+    title: (getPropertyValue(props['Title']) as string) || '',
+    youtubeLink: (getPropertyValue(props['YouTube Link']) as string) || '',
+    order: (getPropertyValue(props['Order']) as number) || 0,
+  }
+}
+
+async function fetchActiveRecitations(): Promise<Recitation[]> {
+  const databaseId = getDbId('NOTION_RECITATIONS_DATABASE_ID')
+  if (!isNotionConfigured() || !databaseId) return []
+
+  try {
+    const response = await queryDatabase(databaseId, {
+      sorts: [{ property: 'Order', direction: 'ascending' }],
+    })
+
+    return response.results
+      .filter((page): page is PageObjectResponse => 'properties' in page)
+      .map(pageToRecitation)
+  } catch (error) {
+    console.error('Error fetching recitations:', error)
+    return []
+  }
+}
+
 // ── Site Settings ──────────────────────────────────────────
 
 async function fetchSiteSettings(): Promise<SiteSettings> {
@@ -388,7 +419,8 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
       const p = page as PageObjectResponse
       const key = (getPropertyValue(p.properties['Key']) as string) || ''
       const value = (getPropertyValue(p.properties['Value']) as string) || ''
-      if (key) settings[key] = value
+      const updatedAt = (getPropertyValue(p.properties['Last edited time']) as string) || ''
+      if (key) settings[key] = { value, updatedAt }
     }
 
     return settings
@@ -439,6 +471,12 @@ export const getGalleryImages = createServerFn({
 }).handler(async (ctx) => {
   const category = (ctx as Record<string, unknown>).data as string | undefined
   return fetchActiveGalleryImages(category)
+})
+
+export const getActiveRecitations = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return fetchActiveRecitations()
 })
 
 export const getSiteSettings = createServerFn({

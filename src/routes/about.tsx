@@ -1,9 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '@/components/layout/Container'
 import { ArabicText } from '@/components/shared/ArabicText'
+import { CloudinaryImage } from '@/components/shared/CloudinaryImage'
+import { getSiteSettings } from '@/lib/notion'
 import { getAboutMeta, getPersonSchema, getBreadcrumbSchema, siteConfig } from '@/lib/seo'
 
 export const Route = createFileRoute('/about')({
+  loader: async () => {
+    const settings = await getSiteSettings()
+    return { settings }
+  },
   head: () => {
     const { meta, links } = getAboutMeta()
     return {
@@ -28,6 +34,9 @@ export const Route = createFileRoute('/about')({
 })
 
 function AboutPage() {
+  const { settings } = Route.useLoaderData()
+  const profileImage = settings.profile_img?.value
+
   return (
     <>
       {/* Hero */}
@@ -53,20 +62,32 @@ function AboutPage() {
             {/* Bio */}
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">Biography</h2>
-              <p className="leading-relaxed text-muted-foreground">
-                Imam Dr. Shamsan Al-Jabi is a distinguished Islamic scholar,
-                educator, and community leader dedicated to spreading authentic
-                Islamic knowledge and fostering unity within the Muslim
-                community. With decades of experience in Islamic education,
-                Quranic studies, and community service, he has touched the lives
-                of thousands.
-              </p>
-              <p className="leading-relaxed text-muted-foreground">
-                He serves as the Imam and spiritual leader of the Muslim
-                Community Center of Greater Pittsburgh (MCCGP), where he leads
-                daily prayers, delivers Friday khutbahs, and provides Islamic
-                guidance to the community.
-              </p>
+              <div className="flex flex-col items-start gap-6 sm:flex-row">
+                {profileImage && (
+                  <CloudinaryImage
+                    src={profileImage}
+                    alt="Imam Dr. Shamsan Al-Jabi"
+                    preset="avatar"
+                    className="size-40 shrink-0 rounded-xl ring-2 ring-primary/20"
+                  />
+                )}
+                <div className="space-y-4">
+                  <p className="leading-relaxed text-muted-foreground">
+                    Imam Dr. Shamsan Al-Jabi is a distinguished Islamic scholar,
+                    educator, and community leader dedicated to spreading authentic
+                    Islamic knowledge and fostering unity within the Muslim
+                    community. With decades of experience in Islamic education,
+                    Quranic studies, and community service, he has touched the lives
+                    of thousands.
+                  </p>
+                  <p className="leading-relaxed text-muted-foreground">
+                    He serves as the Imam and spiritual leader of the Muslim
+                    Community Center of Greater Pittsburgh (MCCGP), where he leads
+                    daily prayers, delivers Friday khutbahs, and provides Islamic
+                    guidance to the community.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Education & Ijazaat */}

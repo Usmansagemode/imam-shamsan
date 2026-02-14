@@ -20,7 +20,7 @@ const presets: Record<ImagePreset, PresetConfig> = {
  * Transform a Cloudinary URL with optimization parameters
  */
 export function getOptimizedUrl(url: string, preset: ImagePreset): string {
-  if (!url) return ''
+  if (!url || typeof url !== 'string') return ''
 
   const cloudinaryRegex =
     /^https?:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(.*)/
@@ -62,7 +62,7 @@ export function getOptimizedUrl(url: string, preset: ImagePreset): string {
  * Get a blur placeholder URL for loading states
  */
 export function getBlurPlaceholder(url: string): string {
-  if (!url) return ''
+  if (!url || typeof url !== 'string') return ''
 
   const cloudinaryRegex =
     /^https?:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(.*)/

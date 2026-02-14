@@ -9,38 +9,89 @@ interface MediaHighlightProps {
 }
 
 function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url) return null
+  if (!url || typeof url !== 'string') return null
 
-  // Handle youtube.com/watch?v=xxx
   const watchMatch = url.match(/[?&]v=([^&]+)/)
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`
 
-  // Handle youtu.be/xxx
   const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
   if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`
 
-  // Handle youtube.com/live/xxx
   const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/)
   if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}`
 
   return null
 }
 
+function getStreamStatus(dateStr: string | undefined): { isLive: boolean; timeAgo: string | null } {
+  if (!dateStr) return { isLive: false, timeAgo: null }
+
+  const streamDate = new Date(dateStr)
+  if (isNaN(streamDate.getTime())) return { isLive: false, timeAgo: null }
+
+  const now = new Date()
+  const diffMs = now.getTime() - streamDate.getTime()
+  if (diffMs < 0) return { isLive: false, timeAgo: null }
+
+  const fourHours = 4 * 60 * 60 * 1000
+  if (diffMs < fourHours) {
+    return { isLive: true, timeAgo: null }
+  }
+
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffWeeks = Math.floor(diffDays / 7)
+
+  let timeAgo: string
+  if (diffHours < 24) {
+    timeAgo = `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+  } else if (diffDays < 7) {
+    timeAgo = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+  } else if (diffWeeks < 5) {
+    timeAgo = `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`
+  } else {
+    timeAgo = streamDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  return { isLive: false, timeAgo }
+}
+
 export function MediaHighlight({ settings }: MediaHighlightProps) {
-  const liveStreamUrl = settings.live_stream_url
-  const liveStreamTitle = settings.live_stream_title || 'Weekly Live Stream'
+  const liveStreamUrl = settings.live_stream_url?.value
+  const liveStreamTitle = settings.live_stream_title?.value || 'Weekly Live Stream'
   const embedUrl = liveStreamUrl ? getYouTubeEmbedUrl(liveStreamUrl) : null
+  const { isLive, timeAgo } = getStreamStatus(settings.live_stream_url?.updatedAt)
 
   return (
     <section className="border-t border-border py-16">
       <Container>
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground md:text-3xl">
-              Media
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+                {embedUrl ? 'Live Stream' : 'Media'}
+              </h2>
+              {embedUrl && isLive && (
+                <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-500">
+                  <span className="relative flex size-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+                  </span>
+                  LIVE
+                </span>
+              )}
+              {embedUrl && !isLive && timeAgo && (
+                <span className="text-sm text-muted-foreground">
+                  {timeAgo}
+                </span>
+              )}
+            </div>
             <p className="mt-2 text-muted-foreground">
-              Watch sermons, recitations & live streams
+              {embedUrl && isLive
+                ? 'Watch the current live broadcast'
+                : embedUrl
+                  ? liveStreamTitle
+                  : 'Watch sermons, recitations & live streams'}
             </p>
           </div>
           <Link
@@ -54,9 +105,6 @@ export function MediaHighlight({ settings }: MediaHighlightProps) {
 
         {embedUrl ? (
           <div className="mx-auto max-w-3xl">
-            <h3 className="mb-4 text-lg font-semibold text-foreground">
-              {liveStreamTitle}
-            </h3>
             <div className="aspect-video overflow-hidden rounded-xl ring-1 ring-foreground/10">
               <iframe
                 src={embedUrl}

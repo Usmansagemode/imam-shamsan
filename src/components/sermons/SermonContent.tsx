@@ -7,7 +7,7 @@ interface SermonContentProps {
 }
 
 function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url) return null
+  if (!url || typeof url !== 'string') return null
 
   const watchMatch = url.match(/[?&]v=([^&]+)/)
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`

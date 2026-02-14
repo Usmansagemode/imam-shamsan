@@ -12,6 +12,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Container } from '@/components/layout/Container'
 import { ThemeProvider } from '@/lib/theme'
 import { getSiteSettings } from '@/lib/notion'
+import { getOptimizedUrl } from '@/lib/cloudinary'
 import { getBaseMeta, siteConfig } from '@/lib/seo'
 
 import appCss from '../styles.css?url'
@@ -21,45 +22,46 @@ export const Route = createRootRoute({
     const settings = await getSiteSettings()
     return { settings }
   },
-  head: () => ({
-    meta: [
-      ...getBaseMeta(),
-      {
-        title: siteConfig.name,
-      },
-      {
-        name: 'description',
-        content: siteConfig.description,
-      },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-      {
-        rel: 'icon',
-        href: '/favicon.ico',
-      },
-      {
-        rel: 'apple-touch-icon',
-        href: '/apple-touch-icon.png',
-      },
-    ],
-    scripts: [
-      {
-        children: `
-          (function() {
-            const theme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (theme === 'dark' || (!theme && prefersDark)) {
-              document.documentElement.classList.add('dark');
-            }
-          })();
-        `,
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const logoUrl = loaderData?.settings?.logo?.value
+    return {
+      meta: [
+        ...getBaseMeta(),
+        {
+          title: siteConfig.name,
+        },
+        {
+          name: 'description',
+          content: siteConfig.description,
+        },
+      ],
+      links: [
+        {
+          rel: 'stylesheet',
+          href: appCss,
+        },
+        ...(logoUrl
+          ? [
+              { rel: 'icon', type: 'image/png', sizes: '48x48', href: getOptimizedUrl(logoUrl, 'favicon') },
+              { rel: 'apple-touch-icon', sizes: '180x180', href: getOptimizedUrl(logoUrl, 'apple-touch-icon') },
+            ]
+          : []),
+      ],
+      scripts: [
+        {
+          children: `
+            (function() {
+              const theme = localStorage.getItem('theme');
+              const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+              if (theme === 'dark' || (!theme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+              }
+            })();
+          `,
+        },
+      ],
+    }
+  },
 
   component: RootComponent,
   notFoundComponent: NotFound,

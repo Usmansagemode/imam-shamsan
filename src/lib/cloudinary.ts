@@ -1,4 +1,4 @@
-export type ImagePreset = 'thumbnail' | 'hero' | 'card' | 'article-cover' | 'gallery-thumb' | 'gallery-full' | 'avatar'
+export type ImagePreset = 'thumbnail' | 'hero' | 'card' | 'article-cover' | 'gallery-thumb' | 'gallery-full' | 'avatar' | 'favicon' | 'apple-touch-icon'
 
 interface PresetConfig {
   width: number
@@ -14,6 +14,8 @@ const presets: Record<ImagePreset, PresetConfig> = {
   'gallery-thumb': { width: 400, height: 400, crop: 'fill' },
   'gallery-full': { width: 1400 },
   avatar: { width: 200, height: 200, crop: 'fill' },
+  favicon: { width: 48, height: 48, crop: 'fit' },
+  'apple-touch-icon': { width: 180, height: 180, crop: 'fit' },
 }
 
 const CLOUDINARY_REGEX = /^https?:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(.*)/

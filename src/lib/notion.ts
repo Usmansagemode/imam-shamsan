@@ -438,19 +438,10 @@ async function fetchAboutPage(): Promise<AboutPage | null> {
   if (!isNotionConfigured() || !databaseId) return null
 
   try {
-    // Fetch the first entry — this is a single-entry database.
-    // We try filtering by Status = Published (select type) first,
-    // and fall back to fetching all entries if the property type doesn't match.
-    let response: QueryDatabaseResponse
-    try {
-      response = await queryDatabase(databaseId, {
-        filter: { property: 'Status', select: { equals: 'Published' } },
-        page_size: 1,
-      })
-    } catch {
-      // Status property may not be a select (e.g. CSV import creates text)
-      response = await queryDatabase(databaseId, { page_size: 1 })
-    }
+    const response = await queryDatabase(databaseId, {
+      filter: { property: 'Status', select: { equals: 'Published' } },
+      page_size: 1,
+    })
 
     const page = response.results[0]
     if (!page || !('properties' in page)) return null

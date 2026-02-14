@@ -1,6 +1,6 @@
 # Developer Setup Guide — Imam Shamsan Website
 
-This guide covers how to set up the project locally, configure the 6 Notion databases and Cloudinary, and deploy to Vercel.
+This guide covers how to set up the project locally, configure the 7 Notion databases and Cloudinary, and deploy to Vercel.
 
 ---
 
@@ -78,7 +78,7 @@ npm run dev                   # starts dev server on port 3005
 
 ### Share Databases with the Integration
 
-Each of the 6 databases must be explicitly shared with the integration:
+Each of the 7 databases must be explicitly shared with the integration:
 - Open the database page in Notion
 - Click **"..."** (top right) > **"Connections"** > search for your integration name > **"Confirm"**
 
@@ -220,7 +220,30 @@ Create each database as a **full-page database** in Notion. Property names must 
 
 ---
 
-### Database 6: Site Settings
+### Database 6: About Page
+
+> Single-entry database for the About page. The imam writes the full about page content in the **Notion page body** using headings, paragraphs, lists, etc. Displayed on the `/about` page.
+
+| Property Name | Type   | Purpose                                          |
+|---------------|--------|--------------------------------------------------|
+| Title         | Title  | Page heading (e.g., "About Imam Shamsan")         |
+| Subtitle AR   | Rich text | Arabic subtitle shown under the heading        |
+| Status        | Select | Options: `Draft`, `Published`                    |
+
+**Body content:** The imam writes the entire about page content — biography, education, specializations, etc. — using Notion's built-in formatting (headings, paragraphs, bullet lists, quotes, images via Cloudinary Embed link).
+
+**How the code uses it:**
+- Filters by `Status = Published`, fetches only 1 entry (`page_size: 1`)
+- Fetches all child blocks for the page body
+- Renders using the existing `ArticleContent` block renderer
+- Falls back to hardcoded content if the database is not configured or empty
+- Profile image comes from Site Settings (`profile_img`), not this database
+
+**Env variable:** `NOTION_ABOUT_DATABASE_ID`
+
+---
+
+### Database 7: Site Settings
 
 > Key-value configuration. Lets the imam update things like the live stream URL without code changes.
 
@@ -293,6 +316,7 @@ NOTION_SERVICES_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 NOTION_SERMONS_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 NOTION_GALLERY_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 NOTION_RECITATIONS_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NOTION_ABOUT_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 NOTION_SETTINGS_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # Cloudinary (cloud name only — no API key needed)
@@ -318,7 +342,7 @@ The site uses TanStack Router's file-based routing. All routes are in `src/route
 | Route                  | Page             | Data Source                        | Key Features                                      |
 |------------------------|------------------|------------------------------------|---------------------------------------------------|
 | `/`                    | Homepage         | Services, Latest Articles, Settings | Hero, services preview, latest writings, media highlight, contact CTA |
-| `/about`               | About            | Settings (profile image)            | Hardcoded bio, education, specializations         |
+| `/about`               | About            | About Page + Settings (profile image) | Notion page body rendered with block parser, hardcoded fallback |
 | `/writings`            | Writings list    | Articles                           | Language + category client-side filtering          |
 | `/writings/$slug`      | Article detail   | Article + page blocks              | Full body rendered from Notion blocks, RTL support |
 | `/sermons`             | Sermons list     | Sermon Summaries                   | Grid of sermon cards                               |

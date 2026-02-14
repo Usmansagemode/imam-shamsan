@@ -131,7 +131,7 @@ Once the website is built, you will manage content through **two tools**:
 - **Notion** — for all text content, metadata, and links
 - **Cloudinary** — for uploading photos and images
 
-Your website has **6 Notion databases**:
+Your website has **7 Notion databases**:
 
 | Database           | What It Controls                                    |
 |--------------------|-----------------------------------------------------|
@@ -140,6 +140,7 @@ Your website has **6 Notion databases**:
 | Sermon Summaries   | Written khutbah summaries on the Sermons page       |
 | Gallery            | Individual photos on the Gallery page               |
 | Recitations        | Qur'anic recitation videos on the Media page        |
+| About Page         | Your biography, education, and background           |
 | Site Settings      | Live stream URL, profile image, logo                |
 
 ### Arabic & English
@@ -242,6 +243,24 @@ The Gallery section displays individual photos organized by category. Each entry
 
 ---
 
+### Editing the About Page
+
+The About page shows your biography, education, specializations, and background. It works just like an article — you write the content directly in the Notion page body.
+
+**To edit the About page:**
+1. Open Notion and go to the **"About Page"** database
+2. Click on the existing entry (there should be one row)
+3. Edit the page body — use headings, paragraphs, bullet lists, quotes, etc.
+4. You can write in Arabic, English, or both
+5. To add images, use `/image` > **"Embed link"** > paste a Cloudinary URL
+
+**Properties at the top:**
+- **Title** — The page heading (e.g., "About Imam Shamsan")
+- **Subtitle AR** — Arabic subtitle shown under the heading (e.g., "الدكتور. شمسان الجابي")
+- **Status** — Set to `Published` to show on the website
+
+---
+
 ### Managing Recitations
 
 The Media page displays Qur'anic recitation videos. Each entry is one YouTube video.
@@ -340,6 +359,12 @@ The Site Settings database contains key-value pairs that control parts of the we
 1. Open Notion > Recitations database
 2. Click "+ New"
 3. Fill in Title, paste the YouTube link, set the Order number
+
+### "I want to update the About page"
+1. Open Notion > About Page database
+2. Click the existing entry
+3. Edit the page body (headings, paragraphs, lists, etc.)
+4. Changes go live automatically
 
 ### "I want to add a photo inside an article or sermon"
 1. Upload the image to Cloudinary first

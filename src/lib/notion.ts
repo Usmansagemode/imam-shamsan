@@ -11,6 +11,7 @@ import type { SermonSummary, Sermon } from '@/types/sermon'
 import type { GalleryImage } from '@/types/gallery'
 import type { Recitation } from '@/types/recitation'
 import type { SiteSettings } from '@/types/settings'
+import type { AboutPage } from '@/types/about'
 import { parseBlocksToContent } from './parsers'
 
 const NOTION_API_VERSION = '2022-06-28'
@@ -430,6 +431,48 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
   }
 }
 
+// ── About Page ──────────────────────────────────────────
+
+async function fetchAboutPage(): Promise<AboutPage | null> {
+  const databaseId = getDbId('NOTION_ABOUT_DATABASE_ID')
+  if (!isNotionConfigured() || !databaseId) return null
+
+  try {
+    // Fetch the first entry — this is a single-entry database.
+    // We try filtering by Status = Published (select type) first,
+    // and fall back to fetching all entries if the property type doesn't match.
+    let response: QueryDatabaseResponse
+    try {
+      response = await queryDatabase(databaseId, {
+        filter: { property: 'Status', select: { equals: 'Published' } },
+        page_size: 1,
+      })
+    } catch {
+      // Status property may not be a select (e.g. CSV import creates text)
+      response = await queryDatabase(databaseId, { page_size: 1 })
+    }
+
+    const page = response.results[0]
+    if (!page || !('properties' in page)) return null
+
+    const p = page as PageObjectResponse
+    const props = p.properties
+
+    const blocks = await getAllBlockChildren(p.id)
+    const content = parseBlocksToContent(blocks)
+
+    return {
+      id: p.id,
+      title: (getPropertyValue(props['Title']) as string) || '',
+      subtitleAr: (getPropertyValue(props['Subtitle AR']) as string) || '',
+      content,
+    }
+  } catch (error) {
+    console.error('Error fetching about page:', error)
+    return null
+  }
+}
+
 // ── Server Functions (exported for routes) ──────────────────
 
 export const getPublishedArticles = createServerFn({
@@ -518,4 +561,10 @@ export const getFeaturedArticles = createServerFn({
     console.error('Error fetching featured articles:', error)
     return []
   }
+})
+
+export const getAboutPage = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return fetchAboutPage()
 })
